@@ -23,22 +23,26 @@ def keep_alive():
     t.daemon = True
     t.start()
 
-# --- 2. GEMINI AI SETUP WITH SYSTEM INSTRUCTION ---
+# --- 2. GEMINI AI SETUP (SUPER SMART SYSTEM PROMPT) ---
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-    # AI Context: SabKraftTech Community Purpose & Short Professional Answers
-    system_instruction = (
-        "You are the official AI Assistant of SabKraftTech. "
-        "SabKraftTech is a premium community/channel for video editing, tech tips, software assets, presets, and mobile editing tutorials. "
-        "Always reply in short, crisp, highly professional Hinglish/Hindi. "
-        "Never write extremely long paragraphs. Keep answers direct and helpful."
-    )
-    model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_instruction)
-else:
-    model = None
+model = None
 
-# --- 3. CUSTOM KEYWORD FILTERS (Assets & Material Delivery) ---
+if GEMINI_API_KEY:
+    try:
+        genai.configure(api_key=GEMINI_API_KEY.strip())
+        system_instruction = (
+            "You are SabKraftTech AI, a highly intelligent, polite, and helpful assistant for the SabKraftTech channel community. "
+            "Your main expertise is video editing (CapCut, KineMaster, Alight Motion, XML presets, color grading, VFX, overlays), YouTube growth, and tech tips. "
+            "However, you can accurately answer ANY question asked by the user (General Knowledge, Science, Everyday Chat, Advice, Coding, Tech, etc.). "
+            "Always respond in natural, easy-to-understand Hinglish (Hindi written in Roman script). "
+            "Keep answers direct, short, crisp, informative, engaging, and polite. Never refuse a genuine question."
+        )
+        model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_instruction)
+        print("Gemini AI Initialized Successfully!")
+    except Exception as e:
+        print(f"Gemini Init Error: {e}")
+
+# --- 3. CUSTOM KEYWORD FILTERS (File Delivery & Redirect) ---
 CUSTOM_FILTERS = {
     "capcut": {
         "text": "📱 **CapCut Pro Latest Version**\n\nNeeche button par click karke direct download karein:",
@@ -46,25 +50,33 @@ CUSTOM_FILTERS = {
         "url": "https://t.me/SabKraftTech"
     },
     "kinemaster": {
-        "text": "🎬 **KineMaster Pro (No Watermark)**\n\nDownload link yahan available hai:",
-        "btn_text": "📥 Download KineMaster",
+        "text": "🎬 **KineMaster Pro (No Watermark)**\n\nLatest Mod Version direct download link:",
+        "btn_text": "📥 Download KineMaster Pro",
         "url": "https://t.me/SabKraftTech"
     },
     "alight motion": {
-        "text": "⚡ **Alight Motion MOD APK**\n\nLatest Mod Version yahan se download karein:",
+        "text": "⚡ **Alight Motion MOD APK**\n\nFull unlocked mod version download karne ke liye click karein:",
         "btn_text": "📥 Download Alight Motion",
         "url": "https://t.me/SabKraftTech"
     },
     "preset": {
-        "text": "🎨 **SabKraftTech Trending Presets & Assets**\n\nSare editing materials hamare official channel par milenge:",
+        "text": "🎨 **SabKraftTech Presets & XML Materials**\n\nSabhi trending presets aur editing materials yahan available hain:",
         "btn_text": "📂 Open Material Channel",
         "url": "https://t.me/SabKraftTech"
     }
 }
 
-GREETINGS = ["hi", "hello", "hey", "good morning", "good night", "good evening", "gm", "gn", "hlo", "ram ram", "assalamu alaikum"]
+# --- 4. INSTANT GREETINGS WITH USER TAGGING ---
+GREETINGS_DATA = [
+    (["hi", "hello", "hey", "hlo"], "Hello {user}! Welcome to **SabKraftTech** ⚡ Kaise hain aap? Bataiye kya help chahiye?"),
+    (["good morning", "gm"], "Good morning {user} from **SabKraftTech**! 🌅 Apka din bohot accha rahe!"),
+    (["good night", "gn"], "Good night {user} from **SabKraftTech**! 🌙 Shubh ratri!"),
+    (["assalamu alaikum", "assalam", "salam"], "Walaikum Assalam {user}! Welcome to **SabKraftTech** ⚡ Bataiye kya sewa karein?"),
+    (["namaste", "pranam"], "Namaste {user}! **SabKraftTech** mein aapka swagat hai 🙏"),
+    (["kaise ho", "how are you"], "Main bilkul badhiya hoon {user}! Aap batao, aaj kya edit kar rahe ho?")
+]
 
-# --- 4. AUTO-DELETE HELPER (Clean Group Logic - 10 Mins) ---
+# --- 5. AUTO-DELETE HELPER (10 Mins Clean Group) ---
 async def delete_msg_after_delay(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message_id: int, delay: int = 600):
     await asyncio.sleep(delay)
     try:
@@ -72,12 +84,12 @@ async def delete_msg_after_delay(context: ContextTypes.DEFAULT_TYPE, chat_id: in
     except Exception:
         pass
 
-# --- 5. TELEGRAM HANDLERS ---
+# --- 6. TELEGRAM MESSAGE HANDLERS ---
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     welcome_text = (
         "🤖 **Welcome to SabKraftTech AI & Automation Bot!**\n\n"
-        "• Editing material chahiye toh naam type karein (e.g., *CapCut*, *Preset*).\n"
-        "• SabKraftTech ya tech assistance ke liye koi bhi sawaal poochhein!"
+        "• Editing Apps & Presets ke liye unka naam type karein (*CapCut*, *Preset*, *KineMaster*).\n"
+        "• Koi bhi sawal ho — main har cheez ka smart response dunga!"
     )
     sent_msg = await update.message.reply_text(welcome_text, parse_mode='Markdown')
     if update.effective_chat.type != 'private':
@@ -97,20 +109,20 @@ async def handle_all_messages(update: Update, context: ContextTypes.DEFAULT_TYPE
     user_mention = f"@{update.effective_user.username}" if update.effective_user.username else f"[{user_name}](tg://user?id={update.effective_user.id})"
     bot_username = context.bot.username.lower() if context.bot.username else ""
 
-    # --- FEATURE A: ANTI-SPAM (External Link Protection) ---
-    if re.search(r'(https?://|t\.me/|telegram\.me/)', user_text_lower):
+    # --- FEATURE A: ANTI-SPAM LINK BLOCKER ---
+    if is_group and re.search(r'(https?://|t\.me/|telegram\.me/)', user_text_lower):
         try:
             await update.message.delete()
             warn_msg = await context.bot.send_message(
                 chat_id=chat_id,
-                text=f"⚠️ {user_mention}, Group mein external links strictly prohibited hain!"
+                text=f"⚠️ {user_mention}, Group mein external links strictly allowed nahi hain!"
             )
             asyncio.create_task(delete_msg_after_delay(context, chat_id, warn_msg.message_id, 30))
             return
         except Exception:
             pass
 
-    # --- FEATURE B: KEYWORD FILTER (Software & Materials) ---
+    # --- FEATURE B: KEYWORD FILTERS (Download & Redirect Links) ---
     matched_key = None
     for key in CUSTOM_FILTERS:
         if key in user_text_lower:
@@ -132,43 +144,40 @@ async def handle_all_messages(update: Update, context: ContextTypes.DEFAULT_TYPE
             asyncio.create_task(delete_msg_after_delay(context, chat_id, reply_msg.message_id, 600))
         return
 
-    # --- FEATURE C: SMART GREETINGS WITH USER TAG ---
-    is_greeting = any(re.search(rf'\b{g}\b', user_text_lower) for g in GREETINGS)
-    if is_greeting and len(user_text.split()) <= 4:
-        if "morning" in user_text_lower or "gm" in user_text_lower:
-            greet_reply = f"Good morning {user_mention} from **SabKraftTech**! 🌅 Have a productive day!"
-        elif "night" in user_text_lower or "gn" in user_text_lower:
-            greet_reply = f"Good night {user_mention} from **SabKraftTech**! 🌙 Sweet dreams!"
-        else:
-            greet_reply = f"Hello {user_mention}! Welcome from **SabKraftTech** ⚡ Aapki kya help kar sakta hoon?"
+    # --- FEATURE C: INSTANT GREETINGS WITH USER TAG ---
+    for keywords, response_template in GREETINGS_DATA:
+        if any(re.search(rf'\b{re.escape(k)}\b', user_text_lower) for k in keywords):
+            greet_reply = response_template.format(user=user_mention)
+            reply_msg = await update.message.reply_text(greet_reply, parse_mode='Markdown')
+            if is_group:
+                asyncio.create_task(delete_msg_after_delay(context, chat_id, update.message.message_id, 600))
+                asyncio.create_task(delete_msg_after_delay(context, chat_id, reply_msg.message_id, 600))
+            return
 
-        reply_msg = await update.message.reply_text(greet_reply, parse_mode='Markdown')
-        if is_group:
-            asyncio.create_task(delete_msg_after_delay(context, chat_id, update.message.message_id, 600))
-            asyncio.create_task(delete_msg_after_delay(context, chat_id, reply_msg.message_id, 600))
-        return
-
-    # --- FEATURE D: GROUP INTELLIGENCE (Smart Selective Response) ---
-    # Group me bot TABHI reply karega jab SabKraftTech ka zikr ho ya Bot ko message target kiya jaye
+    # --- FEATURE D: GROUP SILENCE (Respond only when tagged/replied) ---
     is_reply_to_bot = update.message.reply_to_message and update.message.reply_to_message.from_user.id == context.bot.id
     is_targeted = (bot_username and f"@{bot_username}" in user_text_lower) or ("sabkraft" in user_text_lower) or ("bot" in user_text_lower)
 
     if is_group and not (is_targeted or is_reply_to_bot):
-        # Members aapas me baat kar rahe hain -> Bot silent rahega
         return
 
-    # --- FEATURE E: GEMINI AI SHORT PROFESSIONAL REPLY ---
+    # --- FEATURE E: GEMINI AI SMART ANSWER FOR ALL QUESTIONS ---
     await update.message.chat.send_action(action="typing")
 
-    prompt = f"User name: {user_name}. Question/Message: {user_text}"
     if model:
         try:
+            prompt = f"User Name: {user_name}. Question: {user_text}"
             response = model.generate_content(prompt)
-            reply_text = response.text
-        except Exception:
-            reply_text = "Maaf kijiyega, filhal AI assist karne mein samarth nahi hai."
+            
+            if response and response.text:
+                reply_text = response.text
+            else:
+                reply_text = f"Haan {user_mention}, main aapka sawaal samajh gaya. Bataiye main aapki kya help kar sakta hoon?"
+        except Exception as err:
+            print(f"Gemini API Execution Error: {err}")
+            reply_text = f"Haan {user_mention}! Main aapki baat samajh gaya. Editing materials ke liye CapCut ya Preset write karein!"
     else:
-        reply_text = "GEMINI_API_KEY is missing."
+        reply_text = "AI System configure nahi hua hai. Render Dashboard par GEMINI_API_KEY verify karein."
 
     ai_reply_msg = await update.message.reply_text(reply_text, parse_mode='Markdown')
 
@@ -176,7 +185,7 @@ async def handle_all_messages(update: Update, context: ContextTypes.DEFAULT_TYPE
         asyncio.create_task(delete_msg_after_delay(context, chat_id, update.message.message_id, 600))
         asyncio.create_task(delete_msg_after_delay(context, chat_id, ai_reply_msg.message_id, 600))
 
-# --- 6. MAIN RUNNER ---
+# --- 7. MAIN RUNNER ---
 if __name__ == '__main__':
     keep_alive()
 
@@ -191,4 +200,3 @@ if __name__ == '__main__':
 
     print("SabKraftTech Smart Bot Active...")
     application.run_polling()
-          
