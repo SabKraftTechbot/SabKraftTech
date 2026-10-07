@@ -331,121 +331,105 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ):
       is_tagged_or_replied = True
 
-  # 2. Check Photo / Screenshot (Gemini Vision Input)
-  if update.message.photo:
-    if is_group and not is_tagged_or_replied:
+    if not is_tagged_or_replied:
       return
 
+  # 2. Custom Keyword Filter Check
+  custom_reply, buttons = get_custom_response(user_text_clean, user_tag)
+  if custom_reply:
+    sent_msg = await update.message.reply_text(
+        custom_reply, reply_markup=buttons, parse_mode='Markdown'
+    )
+    if is_group:
+      asyncio.create_task(
+          auto_delete_msg(
+              context.bot, update.message.chat_id, sent_msg.message_id
+          )
+      )
+    return
+
+  # 3. Gemini AI Processing (Photo or Text)
+  reply_text = ''
+  if update.message.photo:
     try:
       photo_file = await update.message.photo[-1].get_file()
       photo_bytes = await photo_file.download_as_bytearray()
+
       image_part = {'mime_type': 'image/jpeg', 'data': bytes(photo_bytes)}
 
-      prompt = (
-          f'User Tag: {user_tag}\n'
-          f"User Query/Caption: {user_text_clean or 'Analyze this screenshot, identify the app or error/problem shown, and provide a clear step-by-step fix in Hinglish.'}"
-      )
+      prompt = [
+          user_text_clean
+          if user_text_clean
+          else f'Is image/screenshot ko analyze karke {user_tag} ko clean 3-step solution do.',
+          image_part,
+      ]
 
-      ai_response = ai_model.generate_content([prompt, image_part])
-      ai_text = (
-          ai_response.text
-          if ai_response.text
-          else f'Screenshot scan hone me dikkat aayi {user_tag}, dobara bhejein.'
-      )
-
-      sent_msg = await update.message.reply_text(
-          ai_text, parse_mode='Markdown', reply_markup=MAIN_BUTTONS
-      )
-
-      if is_group and sent_msg:
-        asyncio.create_task(
-            auto_delete_msg(
-                context.bot, update.message.chat_id, sent_msg.message_id, 600
-            )
+      if ai_model:
+        response = ai_model.generate_content(prompt)
+        reply_text = response.text
+      else:
+        reply_text = (
+            '⚠️ **Gemini API Key missing hai!** Environment variables check'
+            ' karein.'
         )
-      return
     except Exception as e:
-      print(f'Vision Error: {e}')
-      await update.message.reply_text(
-          f'🔍 Screenshot scan karne me dikkat aayi {user_tag}. Clear photo ya'
-          ' error text bhejein!'
-      )
-      return
+      reply_text = f'❌ Image process karne me issue aaya: {str(e)}'
 
-  # 3. Check Custom Text Keywords
-  if user_text_clean:
-    response_text, response_buttons = get_custom_response(
-        user_text_clean, user_tag
-    )
-
-    if response_text:
-      sent_msg = await update.message.reply_text(
-          response_text,
-          parse_mode='Markdown',
-          reply_markup=response_buttons or MAIN_BUTTONS,
-      )
-      if is_group and sent_msg:
-        asyncio.create_task(
-            auto_delete_msg(
-                context.bot, update.message.chat_id, sent_msg.message_id, 600
-            )
-        )
-      return
-
-  if is_group and not is_tagged_or_replied:
-    return
-
-  # 4. Gemini Smart AI Response
-  if ai_model and user_text_clean:
+  elif user_text_clean:
     try:
-      prompt_with_context = (
-          f'User Tag/Name: {user_tag}\nUser Message: {user_text_clean}'
-      )
-      ai_response = ai_model.generate_content(prompt_with_context)
-      ai_text = (
-          ai_response.text
-          if ai_response.text
-          else f'Processing me dikkat aayi {user_tag}, dobara puchein.'
+      if ai_model:
+        prompt = f'User Name/Tag: {user_tag}\nQuery: {user_text_clean}'
+        response = ai_model.generate_content(prompt)
+        reply_text = response.text
+      else:
+        reply_text = (
+            '⚠️ **Gemini API Key missing hai!** Environment variables check'
+            ' karein.'
+        )
+    except Exception as e:
+      reply_text = f'❌ Reply generate karne me issue aaya: {str(e)}'
+
+  if reply_text:
+    try:
+      sent_msg = await update.message.reply_text(
+          reply_text, reply_markup=MAIN_BUTTONS, parse_mode='Markdown'
       )
     except Exception:
-      ai_text = (
-          f'⚡ **SabKraftTech AI:** Thodi der me try karein {user_tag} ya hamara'
-          ' Telegram Channel check karein!'
+      # In case of Markdown parsing failure
+      sent_msg = await update.message.reply_text(
+          reply_text, reply_markup=MAIN_BUTTONS
       )
 
-    sent_msg = await update.message.reply_text(
-        ai_text, parse_mode='Markdown', reply_markup=MAIN_BUTTONS
-    )
-
-    if is_group and sent_msg:
+    if is_group:
       asyncio.create_task(
           auto_delete_msg(
-              context.bot, update.message.chat_id, sent_msg.message_id, 600
+              context.bot, update.message.chat_id, sent_msg.message_id
           )
       )
 
 
 # ==========================================
-# 7. MAIN APPLICATION RUNNER
+# 7. BOT RUNNER & FLASK STARTUP
 # ==========================================
 def main():
-  if not TELEGRAM_TOKEN:
-    print('Error: TELEGRAM_BOT_TOKEN missing!')
-    return
-
+  # Flask web server background thread me start karna
   threading.Thread(target=run_flask, daemon=True).start()
 
-  app_bot = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+  if not TELEGRAM_TOKEN:
+    print('❌ ERROR: TELEGRAM_BOT_TOKEN environment variable set nahi hai!')
+    return
 
-  app_bot.add_handler(
-      MessageHandler(
-          (filters.TEXT | filters.PHOTO) & ~filters.COMMAND, handle_message
-      )
+  application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+
+  # Message handler for all text and photo messages
+  application.add_handler(
+      MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
   )
 
-  print('SabKraftTech Ultra Advanced Bot Started Successfully!')
-  app_bot.run_polling()
+  print('🚀 SabKraftTech Mastermind AI Bot is active and running polling...')
+  application.run_polling()
 
 
 if __name__ == '__main__':
   main()
+        
