@@ -12,7 +12,7 @@ from telegram.ext import (
 )
 
 # ==========================================
-# 1. FLASK WEB SERVER (FIXED FOR UPTIMEROBOT)
+# 1. FLASK WEB SERVER (FOR UPTIMEROBOT 24/7)
 # ==========================================
 app = Flask(__name__)
 
@@ -102,14 +102,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
       )
       reply_sent = True
 
-      # Group me 10 minute (600s) baad auto-delete
       if chat_type in ['group', 'supergroup'] and sent_msg:
-        context.job_queue.run_once(
-            auto_delete_msg,
-            600,
-            chat_id=update.message.chat_id,
-            data=sent_msg.message_id,
-        )
+        if context.job_queue:
+          context.job_queue.run_once(
+              auto_delete_msg,
+              600,
+              chat_id=update.message.chat_id,
+              data=sent_msg.message_id,
+          )
       break
 
   if reply_sent:
@@ -132,12 +132,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     sent_msg = await update.message.reply_text(ai_text)
 
     if chat_type in ['group', 'supergroup'] and sent_msg:
-      context.job_queue.run_once(
-          auto_delete_msg,
-          600,
-          chat_id=update.message.chat_id,
-          data=sent_msg.message_id,
-      )
+      if context.job_queue:
+        context.job_queue.run_once(
+            auto_delete_msg,
+            600,
+            chat_id=update.message.chat_id,
+            data=sent_msg.message_id,
+        )
 
 
 # Main Application Runner
@@ -161,3 +162,4 @@ def main():
 
 if __name__ == '__main__':
   main()
+    
