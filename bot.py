@@ -1,5 +1,4 @@
 import asyncio
-import io
 import os
 import re
 import threading
@@ -14,14 +13,14 @@ from telegram.ext import (
 )
 
 # ==========================================
-# 1. FLASK WEB SERVER (24/7 FOR UPTIMEROBOT)
+# 1. FLASK WEB SERVER (24/7 FOR RENDER)
 # ==========================================
 app = Flask(__name__)
 
 
 @app.route('/')
 def home():
-  return 'SabKraftTech Mastermind AI Bot is Live & Active!', 200
+  return 'SabKraftTech Ultra Smart AI Bot Active!', 200
 
 
 def run_flask():
@@ -35,7 +34,7 @@ def run_flask():
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 GEMINI_KEY = os.environ.get('GEMINI_API_KEY')
 
-# Main Platform Buttons
+# Buttons tabhi attach honge jab user SabKraftTech ya Links poochega
 MAIN_BUTTONS = InlineKeyboardMarkup([
     [
         InlineKeyboardButton(
@@ -56,71 +55,62 @@ MAIN_BUTTONS = InlineKeyboardMarkup([
     ],
 ])
 
-# Bots Directory Buttons
-BOTS_BUTTONS = InlineKeyboardMarkup([
-    [
-        InlineKeyboardButton(
-            '🤖 Mod Apps Bot (@Sabkrafttech_bot)',
-            url='https://t.me/Sabkrafttech_bot',
-        )
-    ],
-    [
-        InlineKeyboardButton(
-            '🛡️ Security Bot (@SabKraftTechHelpbot)',
-            url='https://t.me/SabKraftTechHelpbot',
-        )
-    ],
-    [
-        InlineKeyboardButton(
-            '📢 Main Channel', url='https://t.me/SabKraftTech'
-        )
-    ],
-])
+# ==========================================
+# 3. GEMINI AI SYSTEM PROMPT & FALLBACK
+# ==========================================
+SYSTEM_INSTRUCTION = (
+    'You are SabKraftTech Official AI Assistant — an intellectual, highly'
+    ' smart, short-replying, Gen-Z digital partner.\n\n'
+    'CRITICAL COMMANDMENTS:\n'
+    '1. ALWAYS ADDRESS USER: Always include the user tag (e.g. @username or'
+    ' Name) provided in prompt context.\n'
+    '2. CRISP & SHORT: Maximum 2 to 3 short sentences or bullet points per'
+    ' reply. Strictly avoid long essays or lectures.\n'
+    '3. CONTEXTUAL GREETINGS:\n'
+    '   - Time-based (GM, GN, GE, Good Morning/Night/Evening in short/long):'
+    ' Reply warmly according to time.\n'
+    '   - Religious Greetings (Salam/Aslm, Namaste, Eid, Ramzan, Chhath,'
+    ' Diwali, Navratri, Christmas, etc.): Respectful, warm, specific aesthetic'
+    ' greeting.\n'
+    '   - Non-Religious / Casual (Hi, Hello, Hey, Kya haal): Smart, cool, Gen-Z'
+    ' creator tone.\n'
+    '4. APK / TECH / EDITING / ERRORS:\n'
+    '   - Give direct, 2-step actionable short solutions (CapCut, Alight'
+    ' Motion, PixelLab, XML, rendering issues, APK requests).\n'
+    '5. MYSTERY OWNER RULE:\n'
+    "   - If asked owner/creator: 'Unhone identity reveal nahi ki hai! Baki main"
+    " SabKraftTech AI hu.'\n"
+    '6. AESTHETIC & EMOJIS: Clean Hinglish (Latin script Hindi), bold key words,'
+    ' and tasteful emojis (✨, ⚡, 🎬, 🚀, 💡, 🎨).\n'
+    '7. DYNAMIC REPLIES: Understand the unique context of every message;'
+    ' NEVER send identical static text.'
+)
 
-# ==========================================
-# 3. GEMINI AI SYSTEM & VISION PROMPT
-# ==========================================
-if GEMINI_KEY:
+
+def get_gemini_model():
+  if not GEMINI_KEY:
+    return None
   genai.configure(api_key=GEMINI_KEY)
 
-  system_instruction = (
-      'You are SabKraftTech Official AI Assistant — an intellectual, highly'
-      ' smart, creative, aesthetic, and empathetic digital partner.\n\n'
-      'TARGET AUDIENCE & PERSONA:\n'
-      'You speak to YouTubers, Video Editors, Graphic Designers, Freelancers,'
-      ' Social Media Creators, and Gen-Z members. You understand meme context,'
-      ' creator burnout, low CTR, high RPM/CPM, client negotiation, XML'
-      ' presets, CapCut errors, Alight Motion, PixelLab, Photoshop, Canva, and'
-      ' video rendering bugs.\n\n'
-      'CORE COMMANDMENTS:\n'
-      '1. ALWAYS address the user by their name/tag provided in context.\n'
-      '2. MYSTERY OWNER RULE: If anyone asks who is the owner, creator, or'
-      ' boss ("malik kon hai", "who created"), NEVER reveal any name! Reply:'
-      ' "Unhone abhi apni identity reveal nahi ki hai. Jab karenge tab sabko'
-      ' pata chal jayega! Baaki SabKraftTech ki details yeh hain..."\n'
-      '3. CREATOR & GEN-Z TONE: To-the-point, aesthetic, high-value,'
-      ' professional yet friendly. Use emojis smartly (✨, ⚡, 🎨, 🎬, 🚀, 💡,'
-      ' 🗿, 🤌, 📉, 📈) without overusing them.\n'
-      '4. RELIGIOUS GREETINGS & FESTIVALS: Give respectful and warm greetings on'
-      ' behalf of SabKraftTech for ALL religions & festivals (Eid, Ramzan,'
-      ' Diwali, Holi, Navratri, Chhath Puja, Christmas, Gurpurab, etc.).\n'
-      '5. RELATIONSHIP & FAMILY ZONE: For queries about GF, BF, Ex, Breakup,'
-      ' Parents (Mom/Dad), Siblings, or Relatives, act as a wise, grounding'
-      ' elder brother/smart guide with deep empathy.\n'
-      '6. SCREENSHOT & ERROR ANALYSIS: If an image/screenshot is provided'
-      ' (CapCut, KineMaster, VN, Telegram, Android errors), scan the visual'
-      ' text/context and provide a clean 3-step solution.\n'
-      '7. APK REQUESTS: Direct them to search in channel/group or mention that'
-      ' Rose Bot / SabKraftTech Team is processing it.\n'
-      '8. TONE: Clean Hinglish (Latin script) with aesthetic bold headings and'
-      ' bullet points.'
+  candidate_models = [
+      'gemini-2.0-flash',
+      'gemini-1.5-flash-latest',
+      'gemini-1.5-flash',
+      'gemini-1.5-pro',
+  ]
+  for m in candidate_models:
+    try:
+      return genai.GenerativeModel(
+          model_name=m, system_instruction=SYSTEM_INSTRUCTION
+      )
+    except Exception:
+      continue
+  return genai.GenerativeModel(
+      model_name='gemini-1.5-flash', system_instruction=SYSTEM_INSTRUCTION
   )
 
-  ai_model = genai.GenerativeModel(
-      'gemini-1.5-flash', system_instruction=system_instruction
-  )
-else:
-  ai_model = None
+
+ai_model = get_gemini_model()
 
 
 def get_user_tag(update: Update) -> str:
@@ -133,170 +123,7 @@ def get_user_tag(update: Update) -> str:
 
 
 # ==========================================
-# 4. CUSTOM KEYWORD DICTIONARY
-# ==========================================
-def get_custom_response(user_text: str, user_tag: str):
-  lower_text = user_text.lower()
-
-  # 1. Owner / Malik Mystery Filter
-  if any(
-      kw in lower_text
-      for kw in [
-          'owner',
-          'malik',
-          'maalik',
-          'kon hai',
-          'kiska hai',
-          'who created',
-          'admin name',
-          'boss',
-      ]
-  ):
-    return (
-        f'🕵️ **Identity Status: Classified**\n'
-        f'━━━━━━━━━━━━━━━━━━━━━━\n'
-        f'Aapko batate hain {user_tag}... Unhone abhi apni identity **reveal'
-        ' nahi ki hai**! 🤫\n'
-        f'Jab sahi waqt aayega tab sabko pata chal jayega. Tab tak'
-        ' **SabKraftTech** ke premium content aur tools ka maza lein!\n\n'
-        f'✨ **SabKraftTech Purpose:**\n'
-        f'• High-Level Video Editing & Presets\n'
-        f'• Premium Unlocked Mod Apps\n'
-        f'• Content Strategy & AI Tech Tools',
-        MAIN_BUTTONS,
-    )
-
-  # 2. Both Bots Info & Redirect Filter
-  if any(
-      kw in lower_text
-      for kw in [
-          'bot info',
-          'other bot',
-          'bots',
-          'sabkrafttech_bot',
-          'helpbot',
-          'security bot',
-          'mod bot',
-      ]
-  ):
-    return (
-        f'🤖 **SabKraftTech Official Bot Ecosystem**\n'
-        f'━━━━━━━━━━━━━━━━━━━━━━\n'
-        f'Hey {user_tag}! Humare 2 main official bots hain:\n\n'
-        f'1️⃣ **@Sabkrafttech_bot** — Mod Apps & Premium Tech Support\n'
-        f'2️⃣ **@SabKraftTechHelpbot** — Security & Community Moderation\n\n'
-        f'👉 Direct access ke liye niche buttons par click karein!',
-        BOTS_BUTTONS,
-    )
-
-  # 3. Purpose & Channel Overview Filter
-  if any(
-      kw in lower_text
-      for kw in [
-          'purpose',
-          'sabkrafttech',
-          'about channel',
-          'youtube',
-          'instagram',
-          'details',
-      ]
-  ):
-    return (
-        f'🚀 **SabKraftTech Official Overview**\n'
-        f'━━━━━━━━━━━━━━━━━━━━━━\n'
-        f'Welcome {user_tag}!\n\n'
-        f'📌 **Purpose:** Content creation with intent, not noise! Focused on'
-        f' structure, flow & execution for creators, Gen-Z, and students.\n\n'
-        f'✨ **What You Get:**\n'
-        f'• CapCut Ultra, KineMaster, Alight Motion Presets & XML\n'
-        f'• PicsArt, PixelLab, Canva & Photoshop Assets\n'
-        f'• YouTube Growth, High RPM/CPM & Earning Tips',
-        MAIN_BUTTONS,
-    )
-
-  # 4. Universal Religious Greetings & Festivals Filter
-  greet_keywords = [
-      'aslm',
-      'assalam',
-      'salam',
-      'walekum',
-      'namaste',
-      'hi',
-      'hello',
-      'good morning',
-      'good night',
-      'gm',
-      'gn',
-      'eid',
-      'ramzan',
-      'ramadan',
-      'bakrid',
-      'diwali',
-      'holi',
-      'muharram',
-      'chhath',
-      'navratri',
-      'christmas',
-      'xmas',
-      'gurpurab',
-      'shivratri',
-      'janmashtami',
-      'rakhi',
-      'raksha bandhan',
-  ]
-  if any(kw in lower_text for kw in greet_keywords):
-    return (
-        f'✨ **Warm Wishes & Greetings from SabKraftTech!**\n'
-        f'━━━━━━━━━━━━━━━━━━━━━━\n'
-        f'Aapko aur aapki family ko **SabKraftTech** ki taraf se dil se bohot'
-        f' bohot mubarakbaad aur greetings {user_tag}! 🌟\n\n'
-        f'Aapki aaj kya help kar sakta hu? App, preset, ya koi guidance'
-        f' chahiye?',
-        MAIN_BUTTONS,
-    )
-
-  # 5. Apps & Premium Mods Filter
-  app_keywords = [
-      'apk',
-      'mod',
-      'premium',
-      'capcut',
-      'alight motion',
-      'aftermotion',
-      'vn',
-      'picsart',
-      'movie box',
-      'kinemaster',
-      'pro app',
-  ]
-  if any(kw in lower_text for kw in app_keywords):
-    return (
-        f'📱 **Premium APK & Mod Support**\n'
-        f'━━━━━━━━━━━━━━━━━━━━━━\n'
-        f'Hey {user_tag}! Premium Mod Apps ke liye:\n\n'
-        f'1️⃣ Channel/Group me app ka naam type karke search karein.\n'
-        f'2️⃣ Agar nahi mila toh wait karein! **Rose Bot / SabKraftTech Team**'
-        f' process kar rahi hai.\n'
-        f'3️⃣ Screenshot bhej kar error ya app problem bhi puch sakte hain!',
-        MAIN_BUTTONS,
-    )
-
-  return None, None
-
-
-# ==========================================
-# 5. AUTO-DELETE TASK (10 MIN FOR GROUPS)
-# ==========================================
-async def auto_delete_msg(bot, chat_id, message_id, delay=600):
-  await asyncio.sleep(delay)
-  try:
-    await bot.delete_message(chat_id=chat_id, message_id=message_id)
-  except Exception:
-    pass
-
-
-# ==========================================
-# 6. UNIFIED HANDLER (TEXT + SCREENSHOTS)
+# 4. UNIFIED MESSAGE HANDLER
 # ==========================================
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
   if not update.message:
@@ -309,8 +136,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
   user_text = update.message.text or update.message.caption or ''
   user_text_clean = user_text.strip()
+  lower_text = user_text_clean.lower()
 
-  # 1. Anti-Spam Link Blocker (Group me)
+  # 1. Anti-Spam Link Blocker (In Groups)
   if is_group and user_text_clean:
     if re.search(r'http[s]?://|t\.me/|telegram\.me/', user_text_clean):
       try:
@@ -319,117 +147,105 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
       except Exception:
         pass
 
-  # Group Tag Check
-  is_tagged_or_replied = False
+  # 2. Group Mention Check
   if is_group:
-    if bot_username and f'@{bot_username}' in user_text_clean:
-      is_tagged_or_replied = True
-    elif (
+    is_tagged = (bot_username and f'@{bot_username}' in user_text_clean) or (
         update.message.reply_to_message
         and update.message.reply_to_message.from_user
         and update.message.reply_to_message.from_user.id == context.bot.id
-    ):
-      is_tagged_or_replied = True
-
-    if not is_tagged_or_replied:
+    )
+    if not is_tagged:
       return
 
-  # 2. Custom Keyword Filter Check
-  custom_reply, buttons = get_custom_response(user_text_clean, user_tag)
-  if custom_reply:
-    sent_msg = await update.message.reply_text(
-        custom_reply, reply_markup=buttons, parse_mode='Markdown'
-    )
-    if is_group:
-      asyncio.create_task(
-          auto_delete_msg(
-              context.bot, update.message.chat_id, sent_msg.message_id
-          )
-      )
-    return
+  # 3. Check if Buttons should be attached (ONLY when user asks about SabKraftTech or links)
+  show_buttons = any(
+      kw in lower_text
+      for kw in [
+          'sabkrafttech',
+          'channel',
+          'group',
+          'social',
+          'links',
+          'youtube',
+          'instagram',
+          'bot info',
+          'owner',
+          'malik',
+      ]
+  )
 
-  # 3. Gemini AI Processing (Photo or Text)
   reply_text = ''
+
+  # 4. Photo / Screenshot Scan (Vision AI)
   if update.message.photo:
     try:
       photo_file = await update.message.photo[-1].get_file()
       photo_bytes = await photo_file.download_as_bytearray()
-
       image_part = {'mime_type': 'image/jpeg', 'data': bytes(photo_bytes)}
 
       prompt = [
-          user_text_clean
-          if user_text_clean
-          else f'Is image/screenshot ko analyze karke {user_tag} ko clean 3-step solution do.',
+          (
+              f'User Tag: {user_tag}\nContext: {user_text_clean or "Is"}'
+              ' screenshot/error ko scan karke direct short 2-step solution'
+              ' do.'
+          ),
           image_part,
       ]
-
       if ai_model:
-        response = ai_model.generate_content(prompt)
-        reply_text = response.text
-      else:
-        reply_text = (
-            '⚠️ **Gemini API Key missing hai!** Environment variables check'
-            ' karein.'
-        )
-    except Exception as e:
-      reply_text = f'❌ Image process karne me issue aaya: {str(e)}'
+        res = ai_model.generate_content(prompt)
+        reply_text = res.text
+    except Exception:
+      reply_text = (
+          f'✨ Hey {user_tag}! Screenshot scan karne me dikkat aayi. Error text'
+          ' me likh kar poochein!'
+      )
 
+  # 5. Text Message Processing (Smart Dynamic AI Response)
   elif user_text_clean:
     try:
       if ai_model:
-        prompt = f'User Name/Tag: {user_tag}\nQuery: {user_text_clean}'
-        response = ai_model.generate_content(prompt)
-        reply_text = response.text
-      else:
-        reply_text = (
-            '⚠️ **Gemini API Key missing hai!** Environment variables check'
-            ' karein.'
+        prompt = (
+            f'User Tag/Name: {user_tag}\nUser Message Context:'
+            f' {user_text_clean}'
         )
-    except Exception as e:
-      reply_text = f'❌ Reply generate karne me issue aaya: {str(e)}'
+        res = ai_model.generate_content(prompt)
+        reply_text = res.text
+      else:
+        reply_text = f'✨ Hey {user_tag}! Batayein, aaj kya help karu?'
+    except Exception:
+      reply_text = (
+          f'✨ Hey {user_tag}! Thoda issue aaya, ek baar dobara poochiye.'
+      )
 
+  # 6. Send Response
   if reply_text:
+    markup = MAIN_BUTTONS if show_buttons else None
     try:
-      sent_msg = await update.message.reply_text(
-          reply_text, reply_markup=MAIN_BUTTONS, parse_mode='Markdown'
+      await update.message.reply_text(
+          reply_text, reply_markup=markup, parse_mode='Markdown'
       )
     except Exception:
-      # In case of Markdown parsing failure
-      sent_msg = await update.message.reply_text(
-          reply_text, reply_markup=MAIN_BUTTONS
-      )
-
-    if is_group:
-      asyncio.create_task(
-          auto_delete_msg(
-              context.bot, update.message.chat_id, sent_msg.message_id
-          )
-      )
+      await update.message.reply_text(reply_text, reply_markup=markup)
 
 
 # ==========================================
-# 7. BOT RUNNER & FLASK STARTUP
+# 5. BOT RUNNER
 # ==========================================
 def main():
-  # Flask web server background thread me start karna
   threading.Thread(target=run_flask, daemon=True).start()
 
   if not TELEGRAM_TOKEN:
-    print('❌ ERROR: TELEGRAM_BOT_TOKEN environment variable set nahi hai!')
+    print('❌ ERROR: TELEGRAM_BOT_TOKEN missing!')
     return
 
   application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-
-  # Message handler for all text and photo messages
   application.add_handler(
       MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
   )
 
-  print('🚀 SabKraftTech Mastermind AI Bot is active and running polling...')
+  print('🚀 SabKraftTech Ultra Smart Bot Running Successfully!')
   application.run_polling()
 
 
 if __name__ == '__main__':
   main()
-        
