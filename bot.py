@@ -13,7 +13,9 @@ from telegram.ext import (
     filters,
 )
 
-# Logging Setup
+# ==========================================
+# 0. LOGGING SETUP
+# ==========================================
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
@@ -130,7 +132,7 @@ def get_filter_reply(lower_text: str, user_tag: str) -> str:
     rules = config.get("custom_rules", [])
     for rule in rules:
         keywords = rule.get("keywords", [])
-        if any(kw in lower_text for kw in keywords):
+        if any(kw.lower() in lower_text for kw in keywords):
             reply = rule.get("reply", "")
             return reply.replace("{user_tag}", user_tag)
     return ""
@@ -166,7 +168,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # 2. Mention Check in Groups
     if is_group:
-        is_tagged = (bot_username and f"@{bot_username}" in user_text_clean) or (
+        is_tagged = (bot_username and f"@{bot_username}" in lower_text) or (
             update.message.reply_to_message
             and update.message.reply_to_message.from_user
             and update.message.reply_to_message.from_user.id == context.bot.id
@@ -174,7 +176,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not is_tagged:
             return
 
-    # 3. Dynamic Button Triggers
+    # 3. Dynamic Button Triggers check
     material_keywords = [
         "material", "materials", "overlay", "transition",
         "preset", "png", "bgm", "sfx", "font", "apk", "download"
@@ -186,14 +188,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_text = ""
 
-    # Step A: Check JSON Filters
+    # Step A: Check JSON Custom Rules Filters FIRST
     matched_reply = get_filter_reply(lower_text, user_tag)
     if matched_reply:
         reply_text = matched_reply
 
     # Step B: Emoji or Sticker Response
     elif is_only_emoji(user_text_clean) or update.message.sticker:
-        reply_text = f"Hey {user_tag}! 🔥 Great vibe! Aaj kaunsa project edit kar rahe ho?"
+        reply_text = f"✨ Hey {user_tag}! 🔥 Great vibe! Aaj kaunsa project edit kar rahe ho?"
 
     # Step C: Screenshot Vision AI Scan
     elif update.message.photo:
@@ -215,7 +217,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logging.error(f"Vision Processing Error: {e}")
             reply_text = f"✨ Hey {user_tag}! Screenshot receive ho gaya hai. Problem detail me batayein!"
 
-    # Step D: General Query via Gemini AI
+    # Step D: General Query via Gemini AI (Agar JSON me match na ho)
     elif user_text_clean:
         try:
             model = ai_model or get_ai_model()
@@ -244,12 +246,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 parse_mode="Markdown"
             )
         except Exception:
-            await update.message.reply_text(reply_text, reply_markup=markup)
+            try:
+                await update.message.reply_text(reply_text, reply_markup=markup)
+            except Exception:
+                pass
 
 # ==========================================
 # 6. APP LAUNCHER
 # ==========================================
 def main():
+    # Background Flask thread start karein 24/7 uptime ke liye
     threading.Thread(target=run_flask, daemon=True).start()
 
     if not TELEGRAM_TOKEN:
@@ -257,6 +263,8 @@ def main():
         return
 
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+    
+    # Message handler register karein (Commands aur non-commands sabhi ke liye)
     application.add_handler(
         MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
     )
