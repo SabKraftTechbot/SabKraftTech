@@ -64,7 +64,7 @@ MATERIAL_BUTTONS = InlineKeyboardMarkup([
 ])
 
 # ==========================================
-# 3. GEMINI AI ENGINE SETUP (Aesthetic & Contextual)
+# 3. GEMINI AI ENGINE SETUP
 # ==========================================
 SYSTEM_PROMPT = (
     "You are SabKraftTech AI — an elite, premium, and aesthetic Gen-Z assistant "
@@ -76,16 +76,18 @@ SYSTEM_PROMPT = (
 
 def get_ai_model():
     if not GEMINI_KEY:
-        logging.error("GEMINI_API_KEY is missing!")
+        logging.error("❌ CRITICAL: GEMINI_API_KEY is missing in Environment Variables!")
         return None
     try:
         genai.configure(api_key=GEMINI_KEY)
-        return genai.GenerativeModel(
+        model = genai.GenerativeModel(
             model_name="gemini-1.5-flash",
             system_instruction=SYSTEM_PROMPT
         )
+        logging.info("✨ Gemini AI Model Initialized Successfully!")
+        return model
     except Exception as e:
-        logging.error("AI Initialization Error: %s", e)
+        logging.error(f"❌ GEMINI INITIALIZATION FAILED: {e}")
         return None
 
 ai_model = get_ai_model()
@@ -107,7 +109,7 @@ def load_json_config():
             with open("filters.json", "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
-            logging.error("JSON Load Error: %s", e)
+            logging.error(f"JSON Load Error: {e}")
     return {"button_triggers": [], "custom_rules": []}
 
 def get_filter_reply(lower_text: str, user_tag: str) -> str:
@@ -119,7 +121,6 @@ def get_filter_reply(lower_text: str, user_tag: str) -> str:
         keywords = rule.get("keywords", [])
         for kw in keywords:
             kw_lower = kw.lower().strip()
-            # Safe exact matching so it never overrides general questions accidentally
             if kw_lower == lower_text or kw_lower in user_words:
                 reply = rule.get("reply", "")
                 return reply.replace("{user_tag}", user_tag)
@@ -177,7 +178,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_text = ""
 
-    # Step A: Check JSON Filters (Strict & Safe)
+    # Step A: Check JSON Filters
     matched_reply = get_filter_reply(lower_text, user_tag)
     if matched_reply:
         reply_text = matched_reply
@@ -194,16 +195,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             image_part = {"mime_type": "image/jpeg", "data": bytes(photo_bytes)}
 
             query_prompt = user_text_clean if user_text_clean else "Error Screenshot"
-            text_prompt = f"User Tag: {user_tag}\nQuery: {query_prompt}\nAnalyze this error screenshot and give a sleek, short 2-step fix with aesthetic emojis."
+            text_prompt = f"User Tag: {user_tag}\nQuery: {query_prompt}\nAnalyze this error and give a short 2-step fix with aesthetic emojis."
 
             model = ai_model or get_ai_model()
             if model:
                 res = model.generate_content([text_prompt, image_part])
                 reply_text = res.text
             else:
-                reply_text = f"✨ Hey {user_tag}! Screenshot received. App name mention karo taaki quick fix dun! ⚡"
+                reply_text = f"✨ Hey {user_tag}! Screenshot received. Please mention your app name! ⚡"
         except Exception as e:
-            logging.error("Vision Processing Error: %s", e)
+            logging.error(f"Vision Processing Error: {e}")
             reply_text = f"✨ Hey {user_tag}! Screenshot mil gaya hai, details share karo! 🛠️"
 
     # Step D: General Unique Contextual Query via Gemini AI
@@ -215,10 +216,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 res = model.generate_content(text_prompt)
                 reply_text = res.text
             else:
-                reply_text = f"✨ Hey {user_tag}! Apni query directly type karo, expert solution mil jayega! 🚀"
+                reply_text = f"⚠️ [AI Not Connected] Hey {user_tag}! Check Render Environment variables (GEMINI_API_KEY)."
         except Exception as e:
-            logging.error("Gemini API Error: %s", e)
-            reply_text = f"✨ Hey {user_tag}! Filhal system thoda busy hai, dobara try karo! 💡"
+            logging.error(f"Gemini API Execution Error: {e}")
+            reply_text = f"✨ Hey {user_tag}! API limit ya error ki wajah se response nahi aaya, dobara try karo! 💡"
 
     # Step E: Send Final Reply with Markup
     if reply_text:
@@ -247,7 +248,7 @@ def main():
     threading.Thread(target=run_flask, daemon=True).start()
 
     if not TELEGRAM_TOKEN:
-        logging.error("TELEGRAM_BOT_TOKEN Environment Variable Missing!")
+        logging.error("❌ CRITICAL: TELEGRAM_BOT_TOKEN is missing!")
         return
 
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
@@ -260,4 +261,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
