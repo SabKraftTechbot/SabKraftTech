@@ -1,163 +1,149 @@
 {
   "filters": [
     {
-      "category": "1. MUSLIM GREETINGS (ISLAMIC & URDU)",
-      "keywords": [
-        "assalamu alaikum", "assalam o alaikum", "slam", "salam", "walaikum assalam", 
-        "walekum assalam", "jumma mubarak", "juma mubarak", "ramadan", "ramzan", 
-        "eid mubarak", "mashallah", "subhanallah", "alhamdulillah", "inshallah", "jazakallah"
-      ],
-      "reply": "✨ **Walaikum Assalam Wa Rahmatullahi Wa Barakatuh {user_tag}!**\n\nSabKraftTech platform par aapka dil se khair-mquqadam hai. Allah aapke ilm, waqt aur kamai me barakat ata farmaye. Batayein aaj kis editing topic ya guidance me aapki madad ki jaye?",
+      "keywords": ["ai tools", "ai", "artificial intelligence", "elevenlabs", "chatgpt", "midjourney", "runway", "sora", "auto caption", "voice cloning", "ai video", "ai image", "text to video", "text to image"],
+      "reply": "🤖 **2026 AI Creator Workflow | SabKraftTech** ✨\n\nAapke topic & context ke hisab se top AI tools:\n\n• **Voice & Audio:** ElevenLabs & Adobe Podcast\n• **AI Prompts & Graphics:** Midjourney v6 & DALL-E 3\n• **Video Generation:** Runway Gen-3 & Sora\n• **Auto Captions:** ChatGPT 4o & CapCut AI Captions\n\nDirect prompts, presets & tools channel me pinned hain! 👇",
+      "button_type": "material"
+    },
+    {
+      "keywords": ["modi", "yogi", "bjp", "congress", "rss", "politics", "rajneeti", "election", "pakistan", "bangladesh", "iran", "nepal", "hate", "nafrat", "religion debate"],
+      "reply": "🕊️ **SabKraftTech Community Guidelines** ✨\n\nSabKraftTech Community me **Peace, Respect & Universal Brotherhood** sabse pehle hai. India, Pakistan, Bangladesh, Nepal, Iran sabhi humare creator brothers hain!\n\n⚠️ **Rule:** Yahan Political, Religious Hate, ya Toxicity strictly forbidden hai. Sirf Skill-Building, Editing & Growth par focus karein! 🎬🎨",
       "button_type": "none"
     },
     {
-      "category": "2. HINDU GREETINGS (HINDI & SANSKRITIC)",
-      "keywords": [
-        "namaste", "namaskar", "pranam", "pranaam", "jai shree ram", "jai sri ram", 
-        "har har mahadev", "radhe radhe", "jai mata di", "shubh prabhat", "shubh sandhya", 
-        "shubh ratri", "jai hanuman"
-      ],
-      "reply": "✨ **Namaste {user_tag}!**\n\nSabKraftTech par aapka saahard abhinandan. Aasha hai aapka din safalta, sukh aur nayi creativity se bharpoor rahega. Batayein aaj aapke video project me kya support chahiye?",
-      "button_type": "none"
-    },
-    {
-      "category": "3. CHRISTIAN GREETINGS",
-      "keywords": [
-        "hallelujah", "praise the lord", "god bless", "god bless you", "amen", 
-        "merry christmas", "happy easter", "lord bless"
-      ],
-      "reply": "✨ **Praise the Lord & Warm Blessings {user_tag}!**\n\nWelcome to SabKraftTech. May peace, grace, and wisdom be upon you today. Feel free to ask anything regarding content creation or design resources!",
-      "button_type": "none"
-    },
-    {
-      "category": "4. DAILY GREETINGS & CASUAL TALKS",
-      "keywords": [
-        "good morning", "gm", "good night", "gn", "good evening", "good afternoon", 
-        "bye", "goodbye", "ttyl", "see you", "take care", "have a nice day", 
-        "kaise ho", "kya haal", "kya chal raha hai", "kaisa hai"
-      ],
-      "reply": "✨ **Hello {user_tag}!**\n\nSabKraftTech Assistant ki taraf se shubh kamnayein! Main bilkul badiya hoon. Aaj aapka creative mood kaisa hai aur kis naye project par kaam karne ka plan hai?",
-      "button_type": "none"
-    },
-    {
-      "category": "5. EMOTIONAL SUPPORT - ALONE, DISTRACTION & FOCUS ISSUE",
-      "keywords": [
-        "alone", "akela", "lonely", "distraction", "distract", "focus nahi ho raha", 
-        "padhai nahi ho rahi", "dhyan nahi lag raha", "mind diversion", "laziness", "procrastination"
-      ],
-      "reply": "❤️ **Suno {user_tag}, Tum Akele Nahi Ho!**\n\nKabhi-kabhi mind ka distract hona normal hai. Phone side rakho, 5 minute lambi saans lo aur yaad karo tumne yeh journey kyun start ki thi.\n\n• Target chhota banao (sirf agle 30 min kaam karo).\n• Apne sapnon ko kisi temporary distraction ke liye mat chhodo. Hum sab tumhare sath hain, mehnat karo!",
-      "button_type": "none"
-    },
-    {
-      "category": "6. EMOTIONAL SUPPORT - BREAKUP, EX, GF/BF & HEARTBREAK",
-      "keywords": [
-        "breakup", "ex", "gf", "bf", "girlfriend", "boyfriend", "dil toot gaya", 
-        "dil dukh raha", "yaad aa rahi", "depression"
-      ],
-      "reply": "🕊️ **Stay Strong {user_tag}!**\n\nJo cheez aapke control me nahi hai, uspar apna future mat kharab karo. Log aayenge aur jayenge, lekin jo skill aur career aap banaoge woh hamesha aapke sath rahega.\n\nIs dard ko apni **Strength** banao. Apni saari energy editing, skill-building aur YouTube par lagao—ek din aapki success sab bol kar batayegi!",
-      "button_type": "none"
-    },
-    {
-      "category": "7. MOTIVATION, DISCIPLINE & GOALS",
-      "keywords": [
-        "motivation", "motivational", "demotivate", "hard work", "consistency", 
-        "success", "goal", "dream", "discipline", "mindset"
-      ],
-      "reply": "🔥 **Creator Mindset {user_tag}!**\n\n\"Safalta raato-raat nahi milti, lekin roz ka 1% improvement aapko ek din sabse alag aur top level par khada kar deta hai.\"\n\nBina parinaam ki chinta kiye, roz thoda-thoda kaam karte raho. Mehnat ka phal zaroor milega!",
-      "button_type": "none"
-    },
-    {
-      "category": "8. FAMILY, RELATIVES & COMMUNITY TALKS",
-      "keywords": [
-        "bhai", "bro", "brother", "family", "pariwar", "ghar wale", "rishtedar", 
-        "relatives", "friends", "dost", "dosti", "group members", "sabkraft family"
-      ],
-      "reply": "✨ **SabKraftTech Family Swagat Karti Hai!**\n\nHum sab yahan ek creator community ki tarah hain. Ek dusre ke sath seekhna, grow karna aur best quality content banana hi humara maqsad hai. Aap sabhi ka support hi humari strength hai!",
-      "button_type": "none"
-    },
-    {
-      "category": "9. BRANDING, ADMIN & OWNER MENTIONS",
-      "keywords": [
-        "sabkrafttech", "sabkraft", "owner", "malik", "sabit", "admin", 
-        "creator", "channel", "group"
-      ],
-      "reply": "✨ **SabKraftTech Official Hub**\n\nHello {user_tag}! SabKraftTech ke official channels, social profiles aur YouTube handle ke links niche diye gaye hain:",
+      "keywords": ["youtube tips", "guidelines 2026", "algorithm 2026", "ctr", "view nahi aa rahe", "retention", "channel grow", "viral video", "impressions", "monetization 2026"],
+      "reply": "📈 **SabKraftTech 2026 Growth Blueprint** 🚀\n\nAapke channel context ke hisab se key action points:\n\n1. **First 3-Sec Hook:** Visual pattern interrupt + Cinematic Audio SFX.\n2. **High CTR (8%+):** Clean contrast & mobile-friendly typography.\n3. **Retention Control:** Har 3-4 seconds me dynamic cuts & zooms.\n4. **2026 Policy:** High-value original storytelling over re-uploaded clips! 🎯",
       "button_type": "official"
     },
     {
-      "category": "10. VIDEO EDITING MATERIALS & PACKS",
-      "keywords": [
-        "material", "materials", "editing pack", "overlay", "overlays", "preset", 
-        "presets", "bgm", "sfx", "sound effect", "sound effects", "transition", 
-        "light leak", "particle", "lut", "luts", "xml", "4k overlay"
-      ],
-      "reply": "✨ **SabKraftTech Cinematic Assets**\n\n4K Overlays, Sound SFX Packs, Non-Copyright BGMs, Light Leaks aur Color LUTs SabKraftTech official channel me properly categorized aur pinned hain.",
-      "button_type": "material"
+      "keywords": ["assalamu alaikum", "assalam o alaikum", "salam", "walekum assalam", "wsalam", "jumma mubarak", "eid mubarak", "ramadan", "ramzan", "muharram"],
+      "reply": "✨ **Walaikum Assalam Warahmatullahi Wabarakatuh {user_tag}!** 🤲⚡\n\nSabKraftTech Creator Hub me aapka swagat hai! Aap par aur aapke parivar par barkat ho. Aaj konse cinematic project ya edit par kaam chal raha hai? 🎬🚀",
+      "button_type": "official"
     },
     {
-      "category": "11. APPS & MOD APKS",
-      "keywords": [
-        "capcut", "alight motion", "kinemaster", "pixellab", "picsart", "vn", 
-        "remini", "lightroom", "node video", "inshot", "apk", "mod apk", "pro apk"
-      ],
-      "reply": "✨ **Pro Mobile Applications**\n\nCapCut Pro, Alight Motion XML, KineMaster No-Watermark, PixelLab Ultra (Pre-loaded Fonts) aur Premium Editing Tools direct download karne ke liye channel check karein.",
-      "button_type": "material"
+      "keywords": ["namaste", "pranam", "radhe radhe", "jai shree ram", "ram ram", "namaskar", "jai bholenath", "har har mahadev", "diwali", "holi", "navratri", "chhath", "durga puja"],
+      "reply": "✨ **Namaste & Festive Warm Greetings {user_tag}!** 🙏⚡\n\nSabKraftTech Family me aapka saadar swagat hai! Aap sabhi ko tyohar ki haardik shubhkaamnayein. Batayein aaj konse creative designs ya edits par support chahiye? 🎨💫",
+      "button_type": "official"
     },
     {
-      "category": "12. THUMBNAIL MATERIALS & HIGH-CTR GUIDES",
-      "keywords": [
-        "thumbnail", "thumbnail design", "ctr", "thumbnail font", "glow effect", 
-        "text effect", "thumbnail background", "thumbnail pack", "high ctr"
-      ],
-      "reply": "✨ **High CTR Thumbnail Resources**\n\n• **Formula:** Max 3 words, High-Contrast Text aur Bright Border Glow.\n• **Materials:** Aesthetic backgrounds, PNG cutout packs aur Premium Fonts channel me uploaded hain.",
-      "button_type": "material"
-    },
-    {
-      "category": "13. GRAPHIC DESIGN ASSETS",
-      "keywords": [
-        "graphic design", "font", "fonts", "png", "png pack", "brush stroke", 
-        "texture", "paper tear", "typography", "vector", "poster design", "banner"
-      ],
-      "reply": "✨ **Graphic Design Essentials**\n\nTrending Bold Fonts, HD Calligraphy PNGs, Paper Tear Textures aur Design Bundles SabKraftTech channel me available hain.",
-      "button_type": "material"
-    },
-    {
-      "category": "14. YOUTUBE GROWTH, ALGORITHM & POLICY",
-      "keywords": [
-        "youtube tips", "youtube algorithm", "channel growth", "monetization", 
-        "copyright", "strike", "reused content", "youtube update", "seo", 
-        "tags", "title", "description"
-      ],
-      "reply": "✨ **YouTube Growth Strategy**\n\n• **Viral Formula:** High CTR (Click Rate) + High Retention (Average View Duration).\n• **Copyright Protection:** Audio/Video reuse karte waqt transforming voiceover aur value addition zaroor karein.",
+      "keywords": ["hi", "hello", "hlo", "hey", "hy", "helo"],
+      "reply": "✨ **Welcome to SabKraftTech {user_tag}!** 👋🎨\n\nBatayein, aaj Video Editing, Graphic Design, Premium APKs chahiye ya Channel Growth par guidance chahiye? 🚀",
       "button_type": "none"
     },
     {
-      "category": "15. ARTIFICIAL INTELLIGENCE & FUTURE TECH",
-      "keywords": [
-        "ai", "gemini", "chatgpt", "ai tool", "ai video", "ai image", "midjourney", 
-        "leonardo ai", "elevenlabs", "ai voice", "ai prompt", "text to video", "technology"
-      ],
-      "reply": "✨ **AI & Future Tech Tools**\n\n• **Scripting:** Gemini aur ChatGPT se high-retention hooks likhein.\n• **Voiceover:** ElevenLabs se realistic narration generate karein.\n• **Visuals:** Leonardo AI & Midjourney se 4K backgrounds generate karein.",
-      "button_type": "none"
-    },
-
-    {
-      "category": "16. MONEY EARNING, FREELANCING & REVENUE",
-      "keywords": [
-        "money", "earning", "paisa", "sponsorship", "freelancing", "client", 
-        "earning tips", "revenue", "cpm", "rpm"
-      ],
-      "reply": "✨ **Creator Monetization Avenues**\n\n• **Services:** Clients ko Video Editing aur High-CTR Thumbnails sell karein.\n• **High RPM:** Tech aur Educational tutorials par CPM/RPM sabse uuncha milta hai.\n• **Consistency:** Portfolio maintain karke brands se direct sponsorship paayein.",
+      "keywords": ["good morning", "gm", "shubh prabhat"],
+      "reply": "🌅 **Good Morning {user_tag}!** ⚡✨\n\nEk naya din, ek naya blank canvas! Aaj apni timeline par magic create karne ke liye tayyar ho? SabKraftTech aapke saath hai! 🎬🚀",
       "button_type": "none"
     },
     {
-      "category": "17. CONTENT WRITING & SCRIPTING",
-      "keywords": [
-        "content writer", "script", "scriptwriting", "hook", "storytelling", 
-        "video idea", "topic idea", "content strategy"
-      ],
-      "reply": "✨ **Cinematic Script Formula**\n\n• **0-5s Hook:** Direct visual shocker ya compelling question.\n• **Retention Gaps:** Har 20-30 seconds me naya visual element ya audio cue.\n• **Call To Action:** Outro me clear engagement command.",
+      "keywords": ["good night", "gn", "shubh ratri", "bye", "allah hafiz", "see you", "leaving", "ja raha hu"],
+      "reply": "🌙 **Good Night & Rest Well {user_tag}!** 💤✨\n\nAaj ka creative workload safe export hua? Mind relax kijiye, kal fir milte hain naye energetic ideas ke saath! 🎨🎬",
       "button_type": "none"
+    },
+    {
+      "keywords": ["good day", "good afternoon", "good evening", "kya chal raha hai", "kya ho raha hai", "kaise ho"],
+      "reply": "☕ **Greetings {user_tag}!** ✨🎯\n\nSabKraftTech Hub me sab badiya! Batayein aaj aapke timeline par cuts lag rahe hain ya canvas pe design work chal raha hai? ⚡",
+      "button_type": "none"
+    },
+    {
+      "keywords": ["mom", "maa", "ammi", "walida", "dad", "papa", "abbu", "walid", "sister", "bhen", "aapi", "bhai", "brother", "family", "parivar", "relatives", "rishtedar"],
+      "reply": "❤️ **Family First Always | SabKraftTech** 🤝✨\n\nParents ki duayein aur family ka support life ki sabse badi strength hoti hai. Unke sapno aur izzat ke liye mehnat karte raho, success zaroor milegi! 🚀",
+      "button_type": "none"
+    },
+    {
+      "keywords": ["breakup", "ex", "gf", "bf", "girlfriend", "boyfriend", "relationship", "heartbroken", "dil toot gaya", "dhokha", "sad", "alone", "akela"],
+      "reply": "❤️‍🩹 **Stay Strong & Focused {user_tag}!** 🤝✨\n\n*\"Log aate hain aur jaate hain, par aapka focus aur skill set hamesha aapki real identity banata hai.\"*\n\nApni emotional energy ko apni art, editing aur skills me daal do. SabKraftTech family har step par aapke saath hai! 🚀🎨",
+      "button_type": "none"
+    },
+    {
+      "keywords": ["negative thoughts", "demotivated", "hopeless", "depression", "pareshan", "tension", "stress", "failure", "haar gaya"],
+      "reply": "🌱 **Breathe Deep & Keep Going {user_tag}!** ⚡✨\n\nRaat kitni bhi gehri ho, savera zaroor hota hai. Creator journey ke setbacks aapka future decide nahi karte.\n\n> *Aap akele nahi hain — SabKraftTech Community aapke saath hai!* Mind fresh karo aur bounce back karo! 🔥🚀",
+      "button_type": "none"
+    },
+    {
+      "keywords": ["positive thoughts", "hope", "ummeed", "motivation", "inspiration", "quote", "creator mindset", "discipline"],
+      "reply": "💡 **Mindset & Focus | SabKraftTech** 🔥✨\n\n> *\"Daily consistency beat raw skill every single day. Aaj ka chhota sa edit kal ke bade empire ki neev hai.\"*\n\nKeep pushing, SabKraftTech family aapki growth ke liye hamesha ready hai! 🚀🎯",
+      "button_type": "none"
+    },
+    {
+      "keywords": ["money earning", "paisa kaise kamaye", "online earning", "freelancing", "clients", "client project", "sponsorship", "earning"],
+      "reply": "💰 **Skill Monetization & Freelancing | SabKraftTech** 🚀✨\n\n1. **Showcase Portfolio:** High-bitrate edits & graphic banners Behance/Instagram par post karein.\n2. **Client Outreach:** Youtubers & Agencies ko DM/Email se value offer karein.\n3. **High Pay Skills:** Retention Editing, Color Grading & CTR Thumbnails premium rate dete hain! 📈",
+      "button_type": "official"
+    },
+    {
+      "keywords": ["capcut", "capcut pro", "capcut mod", "capcut pc"],
+      "reply": "🎬 **CapCut Pro Asset Vault | SabKraftTech** ⚡✨\n\n• No Watermark & 4K 60FPS Export\n• Smooth Slow-Mo (Velocity) & Auto Captions Unlocked\n• Android & PC Compatibility\n\nOfficial tested version niche channel se install karein: 👇",
+      "button_type": "material"
+    },
+    {
+      "keywords": ["kinemaster", "kinemaster pro", "kinemaster mod"],
+      "reply": "🎞️ **KineMaster Pro Suite | SabKraftTech** ⚡✨\n\n• No Watermark & Unlimited Video Layers\n• Chroma Key (Green Screen) & Keyframe Animation\n• Full Asset Store Unlocked\n\nSafe & crash-free APK link channel me pinned hai: 👇",
+      "button_type": "material"
+    },
+    {
+      "keywords": ["alight motion", "am mod", "alight motion pro"],
+      "reply": "⚡ **Alight Motion Pro Hub | SabKraftTech** 🎨✨\n\n• XML Presets Import/Export Support\n• Keyframe Animation & Vector Graphics\n• Watermark Removed & Shake Effects\n\nDirect XML files & Mod APK niche channel se collect karein: 👇",
+      "button_type": "material"
+    },
+    {
+      "keywords": ["photoshop", "ps touch", "lightroom", "picsart", "pixellab", "remini", "vn editor", "canva"],
+      "reply": "🎨 **Pro Graphic Design & Editing Suite | SabKraftTech** 🚀✨\n\nPS Touch, PixelLab Ultra (Custom Fonts Added), Lightroom Presets, Remini Unlocked aur VN Mod direct channel se install karein: 👇",
+      "button_type": "material"
+    },
+    {
+      "keywords": ["apk", "mod apk", "app link", "download link", "software", "premium app"],
+      "reply": "📦 **SabKraftTech Safe App Vault** 📦✨\n\nSaare Tested, Virus-Free, Clean aur Premium Editing Software & Mod APKs channel me pinned hain: 👇",
+      "button_type": "material"
+    },
+    {
+      "keywords": ["overlay", "png", "transition", "vfx", "effects pack", "3d model"],
+      "reply": "✨ **Cinematic Visual Asset Library | SabKraftTech** 🎬✨\n\nHigh-Bitrate Overlays, Light Leaks, PNG Cutouts, Visual Effects & 3D Transitions channel se download karein: 👇",
+      "button_type": "material"
+    },
+    {
+      "keywords": ["font", "fonts", "calligraphy", "preset", "presets", "xml", "lut", "color grading"],
+      "reply": "🎨 **Aesthetic Typography & Preset Hub | SabKraftTech** 🖋️✨\n\nTrending Hindi, Urdu & English Fonts, Color Grading LUTs, Lightroom Presets & Alight Motion XMLs channel me pinned hain: 👇",
+      "button_type": "material"
+    },
+    {
+      "keywords": ["sfx", "bgm", "sound effect", "sound effects", "background music", "copyright free music", "audio"],
+      "reply": "🎵 **Pro Audio & SFX Library | SabKraftTech** 🔊✨\n\nCinematic Whooshes, Deep Bass Drops, Riser SFX & Copyright-Free Background Music direct download karein: 👇",
+      "button_type": "material"
+    },
+    {
+      "keywords": ["material", "pack", "editing pack", "resource", "assets"],
+      "reply": "🎨 **Master Production Resources | SabKraftTech** ⚡✨\n\nAll-in-One Editing Packs, Graphic Kits & Production Assets direct access ke liye main channel visit karein: 👇",
+      "button_type": "material"
+    },
+    {
+      "keywords": ["not working", "crash", "bug", "app not installing", "black screen", "app stop"],
+      "reply": "🛠️ **App Crash Diagnosis | SabKraftTech** ⚡\n\n1. Phone Settings -> App Manager me jaakar **Clear Cache** karein.\n2. Device Restart karein & Storage verify karein.\n3. Safe, stable version channel se redownload karein: 👇",
+      "button_type": "material"
+    },
+    {
+      "keywords": ["export error", "export lag", "4k export", "bitrate", "frame drop", "rendering fail", "ram lag"],
+      "reply": "⚡ **Render Optimization Guide | SabKraftTech** 🎯\n\n1. Best Settings: **1080p | 60FPS | H.264 (Bitrate 12-15 Mbps)**.\n2. Export ke samay Background Apps close rakhein.\n3. Heavy layers ko parts me render karke combine karein!",
+      "button_type": "none"
+    },
+    {
+      "keywords": ["thumbnail", "banner", "logo", "graphic design", "title", "typography design"],
+      "reply": "🖼️ **Graphic & Thumbnail Rules | SabKraftTech** 🎨✨\n\n1. **High Contrast:** Color Rule follow karein (e.g. Yellow/Black/White).\n2. **Visual Focus:** Main subject canvas ka 50-60% area le.\n3. **Clarity:** Minimal & bold mobile-friendly typography use karein!",
+      "button_type": "official"
+    },
+    {
+      "keywords": ["thanks", "thank you", "shukriya", "dhanyawad", "thanku", "ty", "op", "nice", "great", "awesome", "mast", "badhiya"],
+      "reply": "❤️ **Heartfelt Gratitude {user_tag}!** ✨⚡\n\nAapke positive feedback se humein aur behtar kaam karne ki energy milti hai! SabKraftTech family ke saath bane rahein aur impactful edits banate rahein! 🚀",
+      "button_type": "none"
+    },
+    {
+      "keywords": ["welcome", "no problem", "mention not"],
+      "reply": "🤝 **Pleasure Is Ours {user_tag}!** ✨🎯\n\nTogether we edit, together we grow! Koi bhi editing material ya doubt ho toh bejhijhak share karein! 🎨",
+      "button_type": "none"
+    },
+    {
+      "keywords": ["bot", "@sabkrafttech", "who are you", "owner", "admin", "sabit", "help", "menu"],
+      "reply": "🤖 **SabKraftTech Official AI Assistant** ✨\n\n**Mission:** Mobile & PC video editing assets, cinematic documentary techniques, graphic design material, aur 2026 YouTube growth strategy har creator tak simple aur aesthetic tareeqe se pahunchana! 🎬⚡",
+      "button_type": "official"
     }
   ]
 }
