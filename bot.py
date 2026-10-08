@@ -13,13 +13,14 @@ from telegram.ext import (
     filters,
 )
 
-# --- GEMINI AI INTEGRATION ---
+# ==========================================
+# 1. GEMINI AI INTEGRATION
+# ==========================================
 try:
     import google.generativeai as genai
     GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
     if GEMINI_KEY:
         genai.configure(api_key=GEMINI_KEY)
-        # Using Gemini 1.5 Flash for high-speed & highly aesthetic response
         ai_model = genai.GenerativeModel("gemini-1.5-flash")
     else:
         ai_model = None
@@ -27,7 +28,7 @@ except Exception as e:
     ai_model = None
 
 # ==========================================
-# 1. LOGGING & FLASK HEALTH CHECK
+# 2. LOGGING & FLASK HEALTH CHECK (24/7 ONLINE)
 # ==========================================
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -38,14 +39,14 @@ app = Flask(__name__)
 
 @app.route("/")
 def health():
-    return "SabKraftTech Ultra Smart AI Bot Online!", 200
+    return "SabKraftTech Ultimate AI Engine Running 24/7!", 200
 
 def run_flask():
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port, use_reloader=False)
 
 # ==========================================
-# 2. BOT CONFIG & BUTTON LAYOUTS
+# 3. BOT CONFIG & BUTTON LAYOUTS
 # ==========================================
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 
@@ -65,56 +66,68 @@ MATERIAL_BUTTONS = InlineKeyboardMarkup([
 ])
 
 # ==========================================
-# 3. DYNAMIC JSON CONFIG READER
+# 4. DYNAMIC JSON FILTER READER
 # ==========================================
+_cached_filters = []
+
 def load_filters():
+    global _cached_filters
     if os.path.exists("filters.json"):
         try:
             with open("filters.json", "r", encoding="utf-8") as f:
                 data = json.load(f)
-                return data.get("filters", [])
+                _cached_filters = data.get("filters", [])
+                return _cached_filters
         except Exception as e:
-            logging.error(f"Error reading filters.json: {e}")
+            logging.error(f"Error reading filters.json (using fallback cache): {e}")
+            return _cached_filters
     return []
+
+def match_keyword_smart(kw: str, text: str) -> bool:
+    kw = kw.lower().strip()
+    if not kw:
+        return False
+    if " " in kw:
+        return kw in text
+    pattern = r'(?<!\w)' + re.escape(kw) + r'(?!\w)'
+    return bool(re.search(pattern, text))
 
 def find_matching_filter(text_lower: str):
     filters_list = load_filters()
     for item in filters_list:
         keywords = item.get("keywords", [])
         for kw in keywords:
-            pattern = r'\b' + re.escape(kw.lower().strip()) + r'\b'
-            if re.search(pattern, text_lower):
+            if match_keyword_smart(kw, text_lower):
                 return item
     return None
 
-def extract_user_tag(update: Update) -> str:
-    user = update.effective_user
+def extract_user_tag(msg) -> str:
+    user = msg.from_user if msg else None
     if not user:
-        return "User"
+        return "Member"
     if user.username:
         return f"@{user.username}"
     return f"[{user.first_name}](tg://user?id={user.id})"
 
 # ==========================================
-# 4. GEMINI REPLIT-STYLE AI RESPONSE GENERATOR
+# 5. REPLIT-STYLE DYNAMIC AI GENERATOR
 # ==========================================
 async def get_ai_response(user_text: str, user_name: str) -> str:
     if not ai_model:
-        return f"✨ Hey {user_name}! SabKraftTech AI me aapka swagat hai. Main aapki kya help kar sakta hoon?"
+        return f"✨ Hey {user_name}! SabKraftTech Community me aapka swagat hai. Main aapki kya help kar sakta hoon?"
 
     system_prompt = f"""
-    You are SabKraftTech AI, an ultra-smart, aesthetic, emotionally connective, and respectful assistant created for SabKraftTech channel (Founder: Sabit Ansari).
+    You are SabKraftTech AI, an ultra-smart, aesthetic, emotionally connective assistant for SabKraftTech channel & community group (Founder: Sabit Ansari).
     
-    GUIDELINES FOR YOUR RESPONSE:
-    1. USER CONTEXT: The user's name is '{user_name}'. Address them naturally.
-    2. LANGUAGE & SENTIMENT: Match the exact language/dialect (Hinglish, Urdu, Hindi, English) and tone of the user. Respect their religious greetings, cultural context, and emotions deeply.
-    3. TONE & STYLE: Short, premium, aesthetic, to-the-point, highly supportive, no spam, formatted with clean bullet points or bold text.
-    4. GREETINGS (Hi/Hello/Salam/Namaste): Briefly mention what they can get here (Editing assets, Pro APKs, High CTR Thumbnails, Scripting tips) and how to search.
-    5. EMOTIONS (Sad/Breakup/Focus/Distraction/Alone): Provide deeply moving, human-like emotional support. Encourage them to channel their pain into editing skills & YouTube creation.
-    6. NO ROBOTIC REPETITION: Make every response feel fresh, human, and custom-crafted like Replit AI. Never sound like a rigid script.
+    GUIDELINES FOR RESPONSE:
+    1. USER CONTEXT: The member asking is '{user_name}'.
+    2. LANGUAGE & SENTIMENT: Match user's exact language (Hinglish/Urdu/Hindi/English) and emotional tone deeply. Respect religious greetings and context.
+    3. TONE & STYLE: Short, premium, aesthetic, highly supportive, direct, formatted with clean bullet points or bold text.
+    4. MEMBER DEMANDS: Guide them on editing assets, Pro APKs, High-CTR Thumbnails, or Youtube Growth strategies based on what they asked.
+    5. NATURAL & HUMAN: Make every reply feel like a real human assistant, unique and non-robotic.
     
-    User Query: "{user_text}"
-    Respond in 2-4 short, ultra-aesthetic paragraphs/bullets:
+    Member Message: "{user_text}"
+    Respond in 2-3 short aesthetic bullet points or paragraphs:
     """
     
     try:
@@ -122,10 +135,10 @@ async def get_ai_response(user_text: str, user_name: str) -> str:
         return response.text.strip()
     except Exception as e:
         logging.error(f"Gemini AI Error: {e}")
-        return f"✨ **Hey {user_name}!**\n\nSabKraftTech community me aapka swagat hai. Batayein aaj kis topic ya video project me aapko assistance chahiye?"
+        return f"✨ **Hey {user_name}!**\n\nSabKraftTech group me aapka swagat hai. Batayein aaj kis editing asset ya query me aapko support chahiye?"
 
 # ==========================================
-# 5. AUTO-DELETE HELPER (300 SECONDS)
+# 6. AUTO-DELETE HELPER (300 SECONDS)
 # ==========================================
 async def delete_message_after_delay(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message_id: int, delay: int = 300):
     await asyncio.sleep(delay)
@@ -135,53 +148,49 @@ async def delete_message_after_delay(context: ContextTypes.DEFAULT_TYPE, chat_id
         pass
 
 # ==========================================
-# 6. CORE MESSAGE HANDLER
+# 7. CORE MESSAGE HANDLER
 # ==========================================
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not update.message:
+    msg = update.effective_message
+    if not msg:
         return
 
-    chat = update.message.chat
+    chat = msg.chat
     chat_type = chat.type
-    is_group_or_channel = chat_type in ["group", "supergroup", "channel"]
-    bot_username = context.bot.username or ""
+    is_group = chat_type in ["group", "supergroup"]
 
-    user_text = update.message.text or update.message.caption or ""
+    # 🛑 1. IGNORE CHANNEL AUTOMATIC POSTS & FORWARDS
+    if msg.is_automatic_forward or getattr(msg, "forward_origin", None) or getattr(msg, "forward_from_chat", None):
+        return
+
+    # 🛑 2. IGNORE POSTS SENT AS CHANNEL / SENDER CHAT
+    if msg.sender_chat and msg.sender_chat.id != chat.id:
+        return
+
+    # 🛑 3. IGNORE BOT MESSAGES
+    if msg.from_user and msg.from_user.is_bot:
+        return
+
+    user_text = msg.text or msg.caption or ""
     if not user_text.strip():
         return
 
     user_text_clean = user_text.strip()
     lower_text = user_text_clean.lower()
-    user_tag = extract_user_tag(update)
-    user_name = update.effective_user.first_name if update.effective_user else "Creator"
+    user_tag = extract_user_tag(msg)
+    user_name = msg.from_user.first_name if msg.from_user else "Creator"
 
-    # A. LINK BLOCKER FOR GROUPS
-    if is_group_or_channel and re.search(r"http[s]?://|t\.me/|telegram\.me/", user_text_clean):
+    # 🛡️ 4. LINK BLOCKER FOR GROUPS (EXCEPT SABKRAFTTECH LINKS)
+    if is_group and re.search(r"http[s]?://|t\.me/|telegram\.me/", user_text_clean):
         if "t.me/sabkrafttech" not in lower_text and "t.me/teamsabkrafttech" not in lower_text:
             try:
-                await update.message.delete()
+                await msg.delete()
                 return
             except Exception:
                 pass
 
-    # B. SPAM FILTER & MENTION CHECK FOR GROUPS
-    is_tagged = (bot_username and f"@{bot_username}".lower() in lower_text) or (
-        update.message.reply_to_message
-        and update.message.reply_to_message.from_user
-        and update.message.reply_to_message.from_user.id == context.bot.id
-    )
-
+    # 🟢 5. RESPONSE GENERATION FOR REAL MEMBERS
     matched_filter = find_matching_filter(lower_text)
-
-    # In Groups: Only reply when tagged OR when keyword filter matches
-    if is_group_or_channel:
-        is_forwarded = bool(update.message.forward_origin or update.message.forward_from_chat or update.message.forward_from)
-        if is_forwarded and not is_tagged and not matched_filter:
-            return
-        if not is_tagged and not matched_filter:
-            return
-
-    # C. RESPONSE GENERATION
     reply_text = ""
     markup = None
 
@@ -197,28 +206,28 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             markup = None
     else:
-        # Fallback to AI Engine (Replit Style) when tagged or in DMs
+        # Direct Query / Un-matched Question -> Gemini AI Response
         reply_text = await get_ai_response(user_text_clean, user_name)
         markup = None
 
     # Send Reply
     sent_message = None
     try:
-        sent_message = await update.message.reply_text(reply_text, reply_markup=markup, parse_mode="Markdown")
+        sent_message = await msg.reply_text(reply_text, reply_markup=markup, parse_mode="Markdown")
     except Exception:
         try:
-            sent_message = await update.message.reply_text(reply_text, reply_markup=markup)
+            sent_message = await msg.reply_text(reply_text, reply_markup=markup)
         except Exception:
             pass
 
-    # D. AUTO-DELETE IN 5 MINS
-    if sent_message and is_group_or_channel:
+    # Auto-delete in 5 mins (Groups only)
+    if sent_message and is_group:
         asyncio.create_task(
-            delete_message_after_delay(context, update.message.chat_id, sent_message.message_id, 300)
+            delete_message_after_delay(context, msg.chat_id, sent_message.message_id, 300)
         )
 
 # ==========================================
-# 7. APP STARTUP
+# 8. APP STARTUP
 # ==========================================
 def main():
     threading.Thread(target=run_flask, daemon=True).start()
@@ -228,11 +237,12 @@ def main():
         return
 
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+    
     application.add_handler(
         MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
     )
 
-    logging.info("🚀 SabKraftTech Replit-Killer AI Bot Started...")
+    logging.info("🚀 SabKraftTech Permanent AI Bot Running...")
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
