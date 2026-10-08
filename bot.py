@@ -66,15 +66,153 @@ MATERIAL_BUTTONS = InlineKeyboardMarkup([
 # ==========================================
 # 3. GEMINI AI ENGINE SETUP
 # ==========================================
-SYSTEM_PROMPT = """
-You are SabKraftTech AI — an aesthetic, Gen-Z assistant for Video Editors, Graphic Designers, YouTubers, Freelancers, and Students.
+SYSTEM_PROMPT = "You are SabKraftTech AI — an aesthetic, Gen-Z assistant for Video Editors, Graphic Designers, YouTubers, Freelancers, and Students. Always tag the user, keep replies short (2-3 lines) with aesthetic emojis, and give expert advice on editing, YouTube growth, and tech troubleshooting."
 
-CORE RULES:
-1. ALWAYS TAG USER: Address the user using exact tag/name provided in context.
-2. SHORT & AESTHETIC: Maximum 2 to 3 lines. Use clean, bold headers and aesthetic emojis (✨, ⚡, 🎬, 🚀, 🎨, 💡, 📱, 💼).
-3. TARGETED EXPERT ADVICE:
-   - Video Editors / Designers: Fast, 2-step solutions for CapCut, Alight Motion, PixelLab, Premiere, XML, Fonts.
-   - YouTubers / Creators: Practical advice for CTR, RPM, Hooks, Thumbnails, Titles.
-   - Freelancers / Students: Portfolio tips, client acquisition, free resources.
-4. TROUBLESHOOTING: If user mentions an error or crash without an image, ALWAYS ask them to share a SCREENSHOT.
-5. TONE: Supportive
+def get_ai_model():
+    if not GEMINI_KEY:
+        return None
+    try:
+        genai.configure(api_key=GEMINI_KEY)
+        candidate_models = [
+            "gemini-2.0-flash",
+            "gemini-1.5-flash-latest",
+            "gemini-1.5-flash",
+            "gemini-1.5-pro"
+        ]
+        for m_name in candidate_models:
+            try:
+                return genai.GenerativeModel(
+                    model_name=m_name,
+                    system_instruction=SYSTEM_PROMPT
+                )
+            except Exception:
+                continue
+    except Exception as e:
+        logging.error(f"AI Initialization Error: {e}")
+    return None
+
+ai_model = get_ai_model()
+
+def extract_user_tag(update: Update) -> str:
+    user = update.effective_user
+    if not user:
+        return "Creator"
+    if user.username:
+        return f"@{user.username}"
+    return f"[{user.first_name}](tg://user?id={user.id})"
+
+# ==========================================
+# 4. JSON FILTERS & EMOJI HELPERS
+# ==========================================
+def load_json_config():
+    if os.path.exists("filters.json"):
+        try:
+            with open("filters.json", "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            logging.error(f"JSON Load Error: {e}")
+    return {"button_triggers": [], "custom_rules": []}
+
+def get_filter_reply(lower_text: str, user_tag: str) -> str:
+    config = load_json_config()
+    rules = config.get("custom_rules", [])
+    for rule in rules:
+        keywords = rule.get("keywords", [])
+        if any(kw in lower_text for kw in keywords):
+            reply = rule.get("reply", "")
+            return reply.replace("{user_tag}", user_tag)
+    return ""
+
+def is_only_emoji(text: str) -> bool:
+    emoji_pattern = re.compile(r"^[\s\U00010000-\U0010ffff\u2600-\u26ff\u2700-\u27bf]+$")
+    return bool(emoji_pattern.match(text))
+
+# ==========================================
+# 5. MAIN MESSAGE HANDLER
+# ==========================================
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message:
+        return
+
+    chat_type = update.message.chat.type
+    user_tag = extract_user_tag(update)
+    bot_username = context.bot.username or ""
+    is_group = chat_type in ["group", "supergroup"]
+
+    user_text = update.message.text or update.message.caption or ""
+    user_text_clean = user_text.strip()
+    lower_text = user_text_clean.lower()
+
+    # 1. Anti-Spam Link Blocker (Group chats)
+    if is_group and user_text_clean:
+        if re.search(r"http[s]?://|t\.me/|telegram\.me/", user_text_clean):
+            try:
+                await update.message.delete()
+                return
+            except Exception:
+                pass
+
+    # 2. Mention Check in Groups
+    if is_group:
+        is_tagged = (bot_username and f"@{bot_username}" in user_text_clean) or (
+            update.message.reply_to_message
+            and update.message.reply_to_message.from_user
+            and update.message.reply_to_message.from_user.id == context.bot.id
+        )
+        if not is_tagged:
+            return
+
+    # 3. Dynamic Button Triggers
+    material_keywords = [
+        "material", "materials", "overlay", "transition",
+        "preset", "png", "bgm", "sfx", "font", "apk", "download",
+        "bundle", "package", "packege", "bundles", "packages"
+    ]
+    official_keywords = ["sabkraft", "sabkrafttech", "admin", "malik", "owner"]
+
+    show_official = any(kw in lower_text for kw in official_keywords)
+    show_material = any(kw in lower_text for kw in material_keywords)
+
+    reply_text = ""
+
+    # Step A: Check JSON Filters
+    matched_reply = get_filter_reply(lower_text, user_tag)
+    if matched_reply:
+        reply_text = matched_reply
+
+    # Step B: Emoji or Sticker Response
+    elif is_only_emoji(user_text_clean) or update.message.sticker:
+        reply_text = f"Hey {user_tag}! 🔥 Great vibe! Aaj kaunsa project edit kar rahe ho?"
+
+    # Step C: Screenshot Vision AI Scan
+    elif update.message.photo:
+        try:
+            photo_file = await update.message.photo[-1].get_file()
+            photo_bytes = await photo_file.download_as_bytearray()
+            image_part = {"mime_type": "image/jpeg", "data": bytes(photo_bytes)}
+
+            query_prompt = user_text_clean if user_text_clean else "Error Screenshot"
+            text_prompt = f"User Tag: {user_tag}\nQuery: {query_prompt}\nIs image ke error ko analyze karke short 2-step fix do."
+
+            model = ai_model or get_ai_model()
+            if model:
+                res = model.generate_content([text_prompt, image_part])
+                reply_text = res.text
+            else:
+                reply_text = f"✨ Hey {user_tag}! Screenshot mil gaya hai. Aapka exact app name batayein!"
+        except Exception as e:
+            logging.error(f"Vision Processing Error: {e}")
+            reply_text = f"✨ Hey {user_tag}! Screenshot receive ho gaya hai. Problem detail me batayein!"
+
+    # Step D: General Query via Gemini AI
+    elif user_text_clean:
+        try:
+            model = ai_model or get_ai_model()
+            if model:
+                text_prompt = f"User Tag: {user_tag}\nQuery: {user_text_clean}"
+                res = model.generate_content(text_prompt)
+                reply_text = res.text
+            else:
+                reply_text = f"✨ Hey {user_tag}! Direct apna query type karein, main help karunga!"
+        except Exception as e:
+            logging.error(f
