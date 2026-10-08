@@ -1,8 +1,9 @@
 import json
 import os
 import re
-import threading
+import asyncio
 import logging
+import threading
 from flask import Flask
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
@@ -24,14 +25,14 @@ app = Flask(__name__)
 
 @app.route("/")
 def health():
-    return "SabKraftTech Auto-Delete Bot Online!", 200
+    return "SabKraftTech Strict Filter Bot Online!", 200
 
 def run_flask():
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port, use_reloader=False)
 
 # ==========================================
-# 2. BOT CONFIG & BUTTONS
+# 2. BOT CONFIG & BUTTON LAYOUTS
 # ==========================================
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 
@@ -47,63 +48,62 @@ OFFICIAL_BUTTONS = InlineKeyboardMarkup([
 ])
 
 MATERIAL_BUTTONS = InlineKeyboardMarkup([
-    [InlineKeyboardButton("📱 Download Premium APKs & Mods", url="https://t.me/SabKraftTech")],
-    [InlineKeyboardButton("📦 Overlays, Presets & Fonts", url="https://t.me/SabKraftTech")],
-    [InlineKeyboardButton("🎵 BGM & SFX Packs", url="https://t.me/SabKraftTech")]
+    [InlineKeyboardButton("📦 Explore Materials & APKs in Channel", url="https://t.me/SabKraftTech")]
 ])
 
 # ==========================================
-# 3. JSON CONFIG LOADER
+# 3. DYNAMIC JSON CONFIG READER (HOT-RELOAD)
 # ==========================================
-def load_json_config():
+def load_filters():
+    """Dynamically reloads filters.json on every hit without needing server restart."""
     if os.path.exists("filters.json"):
         try:
             with open("filters.json", "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            pass
-    return {"button_triggers": [], "custom_rules": []}
+                data = json.load(f)
+                return data.get("filters", [])
+        except Exception as e:
+            logging.error(f"Error reading filters.json: {e}")
+    return []
 
-def get_matched_rule(lower_text: str):
-    config = load_json_config()
-    rules = config.get("custom_rules", [])
-    for rule in rules:
-        keywords = rule.get("keywords", [])
+def find_matching_filter(text_lower: str):
+    filters_list = load_filters()
+    for item in filters_list:
+        keywords = item.get("keywords", [])
         for kw in keywords:
             pattern = r'\b' + re.escape(kw.lower().strip()) + r'\b'
-            if re.search(pattern, lower_text):
-                return rule
+            if re.search(pattern, text_lower):
+                return item
     return None
 
 def extract_user_tag(update: Update) -> str:
     user = update.effective_user
     if not user:
-        return "Creator"
+        return "User"
     if user.username:
         return f"@{user.username}"
     return f"[{user.first_name}](tg://user?id={user.id})"
 
 # ==========================================
-# 4. AUTO-DELETE HELPER FUNCTION (5 MINUTES)
+# 4. AUTO-DELETE HELPER (5 MINUTES / 300 SECONDS)
 # ==========================================
-def schedule_message_deletion(context, chat_id, message_id):
-    def delete_msg():
+def schedule_auto_delete(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message_id: int):
+    def delete_task():
+        async def do_delete():
+            try:
+                await context.bot.delete_message(chat_id=chat_id, message_id=message_id)
+            except Exception:
+                pass
+        
         try:
-            # Bot ki apni async loop me message delete karne ke liye run_coroutine_threadsafe use hota hai
-            import asyncio
-            async def do_delete():
-                try:
-                    await context.bot.delete_message(chat_id=chat_id, message_id=message_id)
-                except Exception:
-                    pass
-            
-            # Application loop me task daalna
-            loop = context.application.create_task(do_delete())
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                asyncio.run_coroutine_threadsafe(do_delete(), loop)
+            else:
+                loop.run_until_complete(do_delete())
         except Exception:
             pass
 
-    # 5 minutes = 300 seconds
-    timer = threading.Timer(300.0, delete_msg)
+    timer = threading.Timer(300.0, delete_task)
     timer.daemon = True
     timer.start()
 
@@ -116,7 +116,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     chat = update.message.chat
     chat_type = chat.type
-    user_tag = extract_user_tag(update)
     is_group_or_channel = chat_type in ["group", "supergroup", "channel"]
     bot_username = context.bot.username or ""
 
@@ -126,88 +125,78 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user_text_clean = user_text.strip()
     lower_text = user_text_clean.lower()
+    user_tag = extract_user_tag(update)
 
-    # Link Blocker for Groups/Channels (Except own branding)
-    if is_group_or_channel and user_text_clean:
-        if re.search(r"http[s]?://|t\.me/|telegram\.me/", user_text_clean):
-            if "t.me/sabkrafttech" not in lower_text and "t.me/teamsabkrafttech" not in lower_text:
-                try:
-                    if chat_type in ["group", "supergroup"]:
-                        await update.message.delete()
-                        return
-                except Exception:
-                    pass
+    # ------------------------------------------
+    # A. LINK BLOCKER FOR GROUPS (EXCEPT OWN LINKS)
+    # ------------------------------------------
+    if is_group_or_channel and re.search(r"http[s]?://|t\.me/|telegram\.me/", user_text_clean):
+        if "t.me/sabkrafttech" not in lower_text and "t.me/teamsabkrafttech" not in lower_text:
+            try:
+                await update.message.delete()
+                return
+            except Exception:
+                pass
 
-    # ==========================================
-    # 🎯 SMART FILTER & SPAM PREVENTION LOGIC
-    # ==========================================
-    if is_group_or_channel:
-        is_forwarded = bool(update.message.forward_origin or update.message.forward_from_chat or update.message.forward_from)
-        
-        is_tagged = (bot_username and f"@{bot_username}".lower() in lower_text) or (
-            update.message.reply_to_message
-            and update.message.reply_to_message.from_user
-            and update.message.reply_to_message.from_user.id == context.bot.id
-        )
-
-        matched_rule = get_matched_rule(lower_text)
-
-        if is_forwarded and not is_tagged and not matched_rule:
-            return
-
-        if not is_tagged and not matched_rule:
-            return
-
-    # ==========================================
-    # 🔑 RESPONSE GENERATION
-    # ==========================================
-    matched_rule = get_matched_rule(lower_text)
-
-    if not matched_rule:
-        if not is_group_or_channel:
-            reply_text = f"✨ Hey {user_tag}! Welcome to SabKraftTech. Looking for CapCut/Alight Motion mods, editing resources, or YouTube growth tips? Drop your query below."
-        else:
-            reply_text = f"✨ Yes {user_tag}! SabKraftTech support is active. Let me know what material or app you need assistance with."
-    else:
-        base_reply = matched_rule.get("reply", "")
-        reply_text = base_reply.replace("{user_tag}", user_tag)
-
-    # ==========================================
-    # 🔘 BUTTON LOGIC: ONLY WHEN TAGGED
-    # ==========================================
-    markup = None
-    is_explicitly_tagged = (bot_username and f"@{bot_username}".lower() in lower_text) or (
+    # ------------------------------------------
+    # B. SPAM FILTER & MENTION CHECK FOR GROUPS
+    # ------------------------------------------
+    is_tagged = (bot_username and f"@{bot_username}".lower() in lower_text) or (
         update.message.reply_to_message
         and update.message.reply_to_message.from_user
         and update.message.reply_to_message.from_user.id == context.bot.id
     )
 
-    if not is_group_or_channel or is_explicitly_tagged:
-        apk_keywords = ["apk", "capcut", "alight motion", "kinemaster", "vn", "pixellab", "picsart", "download", "mod", "premium", "apps", "modes"]
-        material_keywords = ["material", "materials", "overlay", "transition", "preset", "png", "bgm", "sfx", "font", "bundle", "package"]
-        official_keywords = ["sabkraft", "sabkrafttech", "admin", "malik", "owner", "creator", "youtube", "instagram"]
+    matched_filter = find_matching_filter(lower_text)
 
-        is_apk_query = any(kw in lower_text for kw in apk_keywords)
-        is_material_query = any(kw in lower_text for kw in material_keywords)
-        show_official = any(kw in lower_text for kw in official_keywords)
+    # If in Group: Ignore forwarded posts or messages that are neither tagged nor match a filter
+    if is_group_or_channel:
+        is_forwarded = bool(update.message.forward_origin or update.message.forward_from_chat or update.message.forward_from)
+        if is_forwarded and not is_tagged and not matched_filter:
+            return
+        if not is_tagged and not matched_filter:
+            return
 
-        if is_apk_query or is_material_query:
-            markup = MATERIAL_BUTTONS
-        elif show_official or matched_rule:
+    # ------------------------------------------
+    # C. RESPONSE GENERATION & BUTTON ATTACHMENT
+    # ------------------------------------------
+    reply_text = ""
+    markup = None
+
+    if matched_filter:
+        raw_reply = matched_filter.get("reply", "")
+        reply_text = raw_reply.replace("{user_tag}", user_tag)
+        btn_type = matched_filter.get("button_type", "none")
+
+        if btn_type == "official":
             markup = OFFICIAL_BUTTONS
+        elif btn_type == "material":
+            markup = MATERIAL_BUTTONS
+        else:
+            markup = None
+    else:
+        # Fallback when tagged in group or direct DM
+        if not is_group_or_channel:
+            reply_text = f"✨ Hey {user_tag}! Welcome to SabKraftTech. How can I help you today?"
+        else:
+            reply_text = f"✨ Yes {user_tag}! How can SabKraftTech assist you?"
+        markup = None
 
-    # Send Response
+    # Send Reply
+    sent_message = None
     try:
         sent_message = await update.message.reply_text(reply_text, reply_markup=markup, parse_mode="Markdown")
     except Exception:
         try:
             sent_message = await update.message.reply_text(reply_text, reply_markup=markup)
         except Exception:
-            sent_message = None
+            pass
 
-    # ⏱️ Agar message group ya supergroup me bheja gaya hai, toh 5 minute baad automatic delete karne ka timer lagayein
+    # ------------------------------------------
+    # D. AUTO-DELETE IN 5 MINS (300 SECONDS)
+    # ------------------------------------------
     if sent_message and is_group_or_channel:
-        schedule_message_deletion(context, update.message.chat_id, sent_message.message_id)
+        schedule_auto_delete(context, update.message.chat_id, sent_message.message_id)
 
 # ==========================================
 # 6. APP STARTUP
@@ -224,9 +213,9 @@ def main():
         MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
     )
 
-    logging.info("🚀 SabKraftTech Auto-Delete Bot Starting Successfully...")
+    logging.info("🚀 SabKraftTech Engine Started Successfully...")
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
-    
+        
