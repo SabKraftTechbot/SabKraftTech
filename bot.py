@@ -64,30 +64,24 @@ MATERIAL_BUTTONS = InlineKeyboardMarkup([
 ])
 
 # ==========================================
-# 3. GEMINI AI ENGINE SETUP
+# 3. GEMINI AI ENGINE SETUP (Final & Stable)
 # ==========================================
-SYSTEM_PROMPT = (
+SYSTEM_PERSONA = (
     "You are SabKraftTech AI — an elite, premium, and aesthetic Gen-Z assistant "
     "for Video Editors, Graphic Designers, YouTubers, Freelancers, and Creators. "
-    "Rule: Every single response must be completely unique, tailored strictly to the user's specific context, "
-    "ultra-short (2-3 lines max), professional yet trendy, to-the-point, and styled with high-end aesthetic emojis. "
-    "Always tag the user cleanly."
+    "Rule: Every response must be completely unique, ultra-short (2-3 lines max), "
+    "professional, trendy, to-the-point, and styled with high-end aesthetic emojis. Always tag the user cleanly."
 )
 
 def get_ai_model():
     if not GEMINI_KEY:
-        logging.error("❌ CRITICAL: GEMINI_API_KEY is missing in Environment Variables!")
+        logging.error("❌ GEMINI_API_KEY is missing!")
         return None
     try:
         genai.configure(api_key=GEMINI_KEY)
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            system_instruction=SYSTEM_PROMPT
-        )
-        logging.info("✨ Gemini AI Model Initialized Successfully!")
-        return model
+        return genai.GenerativeModel("gemini-1.5-flash")
     except Exception as e:
-        logging.error(f"❌ GEMINI INITIALIZATION FAILED: {e}")
+        logging.error(f"❌ AI Init Error: {e}")
         return None
 
 ai_model = get_ai_model()
@@ -195,31 +189,31 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             image_part = {"mime_type": "image/jpeg", "data": bytes(photo_bytes)}
 
             query_prompt = user_text_clean if user_text_clean else "Error Screenshot"
-            text_prompt = f"User Tag: {user_tag}\nQuery: {query_prompt}\nAnalyze this error and give a short 2-step fix with aesthetic emojis."
+            full_prompt = f"{SYSTEM_PERSONA}\n\nUser Tag: {user_tag}\nQuery/Error: {query_prompt}\nAnalyze this image error and give a quick 2-step fix."
 
             model = ai_model or get_ai_model()
             if model:
-                res = model.generate_content([text_prompt, image_part])
+                res = model.generate_content([full_prompt, image_part])
                 reply_text = res.text
             else:
                 reply_text = f"✨ Hey {user_tag}! Screenshot received. Please mention your app name! ⚡"
         except Exception as e:
-            logging.error(f"Vision Processing Error: {e}")
-            reply_text = f"✨ Hey {user_tag}! Screenshot mil gaya hai, details share karo! 🛠️"
+            logging.error(f"Vision Error: {e}")
+            reply_text = f"✨ Hey {user_tag}! Screenshot processed, details share karo! 🛠️"
 
     # Step D: General Unique Contextual Query via Gemini AI
     elif user_text_clean:
         try:
             model = ai_model or get_ai_model()
             if model:
-                text_prompt = f"User Tag: {user_tag}\nQuery: {user_text_clean}"
-                res = model.generate_content(text_prompt)
+                full_prompt = f"{SYSTEM_PERSONA}\n\nUser Tag: {user_tag}\nQuery: {user_text_clean}"
+                res = model.generate_content(full_prompt)
                 reply_text = res.text
             else:
-                reply_text = f"⚠️ [AI Not Connected] Hey {user_tag}! Check Render Environment variables (GEMINI_API_KEY)."
+                reply_text = f"✨ Hey {user_tag}! AI not configured. Check Render API Key! ⚠️"
         except Exception as e:
             logging.error(f"Gemini API Execution Error: {e}")
-            reply_text = f"✨ Hey {user_tag}! API limit ya error ki wajah se response nahi aaya, dobara try karo! 💡"
+            reply_text = f"✨ Hey {user_tag}! Apni query thoda aur detail me poochhein, main ready hoon! 💡"
 
     # Step E: Send Final Reply with Markup
     if reply_text:
@@ -248,7 +242,7 @@ def main():
     threading.Thread(target=run_flask, daemon=True).start()
 
     if not TELEGRAM_TOKEN:
-        logging.error("❌ CRITICAL: TELEGRAM_BOT_TOKEN is missing!")
+        logging.error("❌ TELEGRAM_BOT_TOKEN missing!")
         return
 
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
@@ -261,3 +255,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
