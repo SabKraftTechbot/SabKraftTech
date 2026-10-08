@@ -218,3 +218,29 @@ def main():
 
 if __name__ == "__main__":
     main()
+# 1. User name tag replace karein
+user_name = update.effective_user.first_name
+reply_text = filter_item["reply"].replace("{user_tag}", user_name)
+
+# 2. Context ke hisab se Buttons set karein
+reply_markup = None
+
+if filter_item.get("button_type") == "material":
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("📁 Explore Materials Channel", url="https://t.me/SabKraftTech")]
+    ])
+elif filter_item.get("button_type") == "official":
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("📢 Telegram Channel", url="https://t.me/SabKraftTech")],
+        [InlineKeyboardButton("👥 Community Group", url="https://t.me/TeamSabKraftTech")],
+        [InlineKeyboardButton("▶️ YouTube Channel", url="https://youtube.com/@SabKraftTech"),
+         InlineKeyboardButton("📸 Instagram", url="https://instagram.com/sabkrafttech")]
+    ])
+
+# 3. Message send karein
+await update.message.reply_text(
+    text=reply_text,
+    reply_markup=reply_markup,
+    parse_mode="Markdown"
+    )
+    
