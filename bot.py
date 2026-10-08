@@ -13,56 +13,6 @@ from telegram.ext import (
     filters,
 )
 
-# ==========================================
-# 1. LOGGING & FLASK SERVER (KEEP-ALIVE)
-# ==========================================
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
-)
-
-app = Flask(__name__)
-
-@app.route("/")
-def health():
-    return "SabKraftTech Dynamic AI Engine is Active!", 200
-
-def run_flask():
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port, use_reloader=False)
-
-# ==========================================
-# 2. CONFIG & AI SETUP
-# ==========================================
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-GEMBilkul! Yeh ekdum next-level idea hai. Ek hi fixed reply baar-baar bhejne se bot boring (robotic) lagne lagta hai. 
-
-Is problem ko solve karne ke liye maine **`bot.py` me ek "Dynamic AI Router"** banaya hai. Ab bot kya karega:
-1. Sabse pehle `filters.json` me keyword match karega (taaki context pata chale ki user kya chahta hai).
-2. Fir us category ka context aur user ka exact message **Gemini AI** ko bhejega.
-3. Gemini us context ko samajh kar **har baar ek naya, fresh, aur aesthetic response** banayega!
-4. **Hate Speech & Politics** ko strictly "Static" rakha gaya hai taaki wahan AI koi galti na kare aur direct warning de.
-
-Yahan aapka **Ultimate `bot.py`** code hai jo is dynamic behavior ko handle karega:
-
-### 🐍 The Advanced Context-Aware `bot.py`
-
-```python
-import json
-import os
-import re
-import threading
-import logging
-from flask import Flask
-import google.generativeai as genai
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import (
-    ApplicationBuilder,
-    ContextTypes,
-    MessageHandler,
-    filters,
-)
-
 # Logging Setup
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -90,19 +40,19 @@ GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 
 OFFICIAL_BUTTONS = InlineKeyboardMarkup([
     [
-        InlineKeyboardButton("📢 Telegram Channel", url="[https://t.me/SabKraftTech](https://t.me/SabKraftTech)"),
-        InlineKeyboardButton("👥 Telegram Group", url="[https://t.me/TeamSabKraftTech](https://t.me/TeamSabKraftTech)")
+        InlineKeyboardButton("📢 Telegram Channel", url="https://t.me/SabKraftTech"),
+        InlineKeyboardButton("👥 Telegram Group", url="https://t.me/TeamSabKraftTech")
     ],
     [
-        InlineKeyboardButton("▶️ YouTube Channel", url="[https://youtube.com/@sabkrafttech?si=BvFSMTysyXScxEj2](https://youtube.com/@sabkrafttech?si=BvFSMTysyXScxEj2)"),
-        InlineKeyboardButton("📸 Instagram ID", url="[https://instagram.com/sabkrafttech](https://instagram.com/sabkrafttech)")
+        InlineKeyboardButton("▶️ YouTube Channel", url="https://youtube.com/@sabkrafttech?si=BvFSMTysyXScxEj2"),
+        InlineKeyboardButton("📸 Instagram ID", url="https://instagram.com/sabkrafttech")
     ]
 ])
 
 MATERIAL_BUTTONS = InlineKeyboardMarkup([
-    [InlineKeyboardButton("📦 Download Overlays & Effects", url="[https://t.me/SabKraftTech](https://t.me/SabKraftTech)")],
-    [InlineKeyboardButton("🎨 Download Presets, PNGs & Fonts", url="[https://t.me/SabKraftTech](https://t.me/SabKraftTech)")],
-    [InlineKeyboardButton("🎵 Download BGM & SFX Packs", url="[https://t.me/SabKraftTech](https://t.me/SabKraftTech)")]
+    [InlineKeyboardButton("📦 Download Overlays & Effects", url="https://t.me/SabKraftTech")],
+    [InlineKeyboardButton("🎨 Download Presets, PNGs & Fonts", url="https://t.me/SabKraftTech")],
+    [InlineKeyboardButton("🎵 Download BGM & SFX Packs", url="https://t.me/SabKraftTech")]
 ])
 
 # ==========================================
@@ -223,7 +173,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         base_reply = matched_rule.get("reply", "")
 
         # Strict Static Reply for Warnings (No AI alteration allowed)
-        if "Hate Speech" in category or "WARNING" in category:
+        if "WARNING" in category or "Hate Speech" in category:
             reply_text = base_reply.replace("{user_tag}", user_tag)
         else:
             # Dynamic AI Generation based on Filter Context
@@ -327,3 +277,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
