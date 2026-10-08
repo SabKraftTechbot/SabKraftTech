@@ -1,5 +1,6 @@
 {
   "button_triggers": [
+    "sabkraft",
     "sabkrafttech",
     "admin",
     "malik",
@@ -31,6 +32,14 @@
     "packages"
   ],
   "custom_rules": [
+    {
+      "category": "SabKraft Brand Greeting",
+      "keywords": [
+        "sabkraft",
+        "sabkrafttech"
+      ],
+      "reply": "✨ **SABKRAFTTECH OFFICIAL**\n\nHey {user_tag}! Yeh aapka apna creator hub hai. Video editing tools, presets, ya YouTube growth se related kya chahiye batayein! 🚀"
+    },
     {
       "category": "Refined Islamic Greetings",
       "keywords": [
@@ -91,6 +100,7 @@
       "category": "Good Evening",
       "keywords": [
         "good evening",
+        "ge",
         "gud evening",
         "gud evng"
       ],
@@ -343,7 +353,6 @@
         "youtube",
         "ctr",
         "rpm",
-        "cpm",
         "views",
         "impressions",
         "seo",
@@ -540,13 +549,4 @@
       "reply": "Hey {user_tag}! 💼 **Student/Freelancer Tip**: Apna 3-best videos ka Portfolio drive link banao aur direct creators ko Instagram/Email par cold message karo!"
     },
     {
-      "category": "Portfolio & Work Review",
-      "keywords": [
-        "check my edit",
-        "review my edit",
-        "portfolio check",
-        "drive link",
-        "edit kaisa hai",
-        "feedback edit"
-      ],
-      "reply": "🔍 **PORTFOLIO & WORK REVIEW!**\n\nHey {user_tag}! Apna video/design work review karwane ke liye:\n1. Goog
+      "category": "Po
