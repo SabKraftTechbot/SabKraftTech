@@ -64,32 +64,29 @@ MATERIAL_BUTTONS = InlineKeyboardMarkup([
 ])
 
 # ==========================================
-# 3. GEMINI AI ENGINE SETUP
+# 3. GEMINI AI ENGINE SETUP (Aesthetic & Contextual)
 # ==========================================
-SYSTEM_PROMPT = "You are SabKraftTech AI — an aesthetic, Gen-Z assistant for Video Editors, Graphic Designers, YouTubers, Freelancers, and Students. Always tag the user, keep replies short (2-3 lines) with aesthetic emojis, and give expert advice on editing, YouTube growth, and tech troubleshooting."
+SYSTEM_PROMPT = (
+    "You are SabKraftTech AI — an elite, premium, and aesthetic Gen-Z assistant "
+    "for Video Editors, Graphic Designers, YouTubers, Freelancers, and Creators. "
+    "Rule: Every single response must be completely unique, tailored strictly to the user's specific context, "
+    "ultra-short (2-3 lines max), professional yet trendy, to-the-point, and styled with high-end aesthetic emojis. "
+    "Always tag the user cleanly."
+)
 
 def get_ai_model():
     if not GEMINI_KEY:
+        logging.error("GEMINI_API_KEY is missing!")
         return None
     try:
         genai.configure(api_key=GEMINI_KEY)
-        candidate_models = [
-            "gemini-2.0-flash",
-            "gemini-1.5-flash-latest",
-            "gemini-1.5-flash",
-            "gemini-1.5-pro"
-        ]
-        for m_name in candidate_models:
-            try:
-                return genai.GenerativeModel(
-                    model_name=m_name,
-                    system_instruction=SYSTEM_PROMPT
-                )
-            except Exception:
-                continue
+        return genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            system_instruction=SYSTEM_PROMPT
+        )
     except Exception as e:
         logging.error("AI Initialization Error: %s", e)
-    return None
+        return None
 
 ai_model = get_ai_model()
 
@@ -102,7 +99,7 @@ def extract_user_tag(update: Update) -> str:
     return f"[{user.first_name}](tg://user?id={user.id})"
 
 # ==========================================
-# 4. JSON FILTERS & EMOJI HELPERS
+# 4. SAFE JSON FILTERS & SMART MATCHING
 # ==========================================
 def load_json_config():
     if os.path.exists("filters.json"):
@@ -116,11 +113,16 @@ def load_json_config():
 def get_filter_reply(lower_text: str, user_tag: str) -> str:
     config = load_json_config()
     rules = config.get("custom_rules", [])
+    user_words = set(lower_text.split())
+    
     for rule in rules:
         keywords = rule.get("keywords", [])
-        if any(kw in lower_text for kw in keywords):
-            reply = rule.get("reply", "")
-            return reply.replace("{user_tag}", user_tag)
+        for kw in keywords:
+            kw_lower = kw.lower().strip()
+            # Safe exact matching so it never overrides general questions accidentally
+            if kw_lower == lower_text or kw_lower in user_words:
+                reply = rule.get("reply", "")
+                return reply.replace("{user_tag}", user_tag)
     return ""
 
 def is_only_emoji(text: str) -> bool:
@@ -175,14 +177,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_text = ""
 
-    # Step A: Check JSON Filters
+    # Step A: Check JSON Filters (Strict & Safe)
     matched_reply = get_filter_reply(lower_text, user_tag)
     if matched_reply:
         reply_text = matched_reply
 
     # Step B: Emoji or Sticker Response
     elif is_only_emoji(user_text_clean) or update.message.sticker:
-        reply_text = f"✨ Hey {user_tag}! 🔥 Great vibe! Aaj kaunsa project edit kar rahe ho?"
+        reply_text = f"✨ Hey {user_tag}! 🔥 Great vibe! Aaj editing ka kaunsa masterpiece chal raha hai? 🎬"
 
     # Step C: Screenshot Vision AI Scan
     elif update.message.photo:
@@ -192,19 +194,19 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             image_part = {"mime_type": "image/jpeg", "data": bytes(photo_bytes)}
 
             query_prompt = user_text_clean if user_text_clean else "Error Screenshot"
-            text_prompt = f"User Tag: {user_tag}\nQuery: {query_prompt}\nIs image ke error ko analyze karke short 2-step fix do."
+            text_prompt = f"User Tag: {user_tag}\nQuery: {query_prompt}\nAnalyze this error screenshot and give a sleek, short 2-step fix with aesthetic emojis."
 
             model = ai_model or get_ai_model()
             if model:
                 res = model.generate_content([text_prompt, image_part])
                 reply_text = res.text
             else:
-                reply_text = f"✨ Hey {user_tag}! Screenshot mil gaya hai. Aapka exact app name batayein!"
+                reply_text = f"✨ Hey {user_tag}! Screenshot received. App name mention karo taaki quick fix dun! ⚡"
         except Exception as e:
             logging.error("Vision Processing Error: %s", e)
-            reply_text = f"✨ Hey {user_tag}! Screenshot receive ho gaya hai. Problem detail me batayein!"
+            reply_text = f"✨ Hey {user_tag}! Screenshot mil gaya hai, details share karo! 🛠️"
 
-    # Step D: General Query via Gemini AI
+    # Step D: General Unique Contextual Query via Gemini AI
     elif user_text_clean:
         try:
             model = ai_model or get_ai_model()
@@ -213,10 +215,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 res = model.generate_content(text_prompt)
                 reply_text = res.text
             else:
-                reply_text = f"✨ Hey {user_tag}! Direct apna query type karein, main help karunga!"
+                reply_text = f"✨ Hey {user_tag}! Apni query directly type karo, expert solution mil jayega! 🚀"
         except Exception as e:
             logging.error("Gemini API Error: %s", e)
-            reply_text = f"✨ Hey {user_tag}! Direct apna query type karein, main help karunga!"
+            reply_text = f"✨ Hey {user_tag}! Filhal system thoda busy hai, dobara try karo! 💡"
 
     # Step E: Send Final Reply with Markup
     if reply_text:
@@ -258,4 +260,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-        
+    
