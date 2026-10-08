@@ -1,552 +1,263 @@
-{
-  "button_triggers": [
-    "sabkraft",
-    "sabkrafttech",
-    "admin",
-    "malik",
-    "owner",
-    "channel",
-    "group",
-    "youtube",
-    "instagram",
-    "social",
-    "links",
-    "material",
-    "materials",
-    "overlay",
-    "transition",
-    "preset",
-    "png",
-    "bgm",
-    "sfx",
-    "font",
-    "apk",
-    "download",
-    "earning",
-    "meme",
-    "hacks",
-    "bundle",
-    "package",
-    "packege",
-    "bundles",
-    "packages"
-  ],
-  "custom_rules": [
-    {
-      "category": "SabKraft Brand Greeting",
-      "keywords": [
-        "sabkraft",
-        "sabkrafttech"
-      ],
-      "reply": "✨ **SABKRAFTTECH OFFICIAL**\n\nHey {user_tag}! Yeh aapka apna creator hub hai. Video editing tools, presets, ya YouTube growth se related kya chahiye batayein! 🚀"
-    },
-    {
-      "category": "Refined Islamic Greetings",
-      "keywords": [
-        "aslm",
-        "salam",
-        "assalamu",
-        "assalamu alaikum",
-        "assalam o alaikum",
-        "walekum",
-        "walekum assalam",
-        "ramzan",
-        "eid",
-        "jumma",
-        "jumma mubarak"
-      ],
-      "reply": "Walaikum Assalam {user_tag}! 🌙 Mubarakbaad! Aaj video editing, graphic design ya YouTube content me kya help chahiye?"
-    },
-    {
-      "category": "Islamic Reverence & Sahaba Respect",
-      "keywords": [
-        "allah",
-        "muhammad",
-        "pbuh",
-        "sahaba",
-        "abu bakr",
-        "umar",
-        "osman",
-        "uthman",
-        "ali",
-        "prophet"
-      ],
-      "reply": "✨ **RESPECT & FAITH**\n\nHey {user_tag}! Allah Paak, Pyare Nabi Muhammad ﷺ aur Sahaba Karam (Hz. Abu Bakr, Hz. Umar, Hz. Uthman, Hz. Ali) ki taleemat se humein sabr, mehnat aur achhe akhlaq ki sikh milti hai. Apne kaam aur akhlaq se sabka dil jeetein! 🤲"
-    },
-    {
-      "category": "Hindu Greetings",
-      "keywords": [
-        "namaste",
-        "namaskar",
-        "jai shree ram",
-        "ram ram",
-        "radhe radhe",
-        "diwali",
-        "holi",
-        "chhath"
-      ],
-      "reply": "Namaste {user_tag}! 🙏 Shubhkaamnayein! Aasha hai aapka creative project badhiya chal raha hai!"
-    },
-    {
-      "category": "Good Morning",
-      "keywords": [
-        "good morning",
-        "gud morning",
-        "gud mrng"
-      ],
-      "reply": "Good Morning {user_tag}! ☀️ Fresh day, fresh content! Aaj kya create kar rahe ho?"
-    },
-    {
-      "category": "Good Evening",
-      "keywords": [
-        "good evening",
-        "ge",
-        "gud evening",
-        "gud evng"
-      ],
-      "reply": "Good Evening {user_tag}! 🌇 Chai ke sath editing session chalu? Batayein kya guide karu!"
-    },
-    {
-      "category": "Good Night",
-      "keywords": [
-        "good night",
-        "gud night",
-        "gud nite",
-        "shubh ratri"
-      ],
-      "reply": "Good Night {user_tag}! 🌙 Kaam save karke rest karein. Kal milte hain fresh ideas ke sath!"
-    },
-    {
-      "category": "Daily Casual Chats & Greetings",
-      "keywords": [
-        "kya haal hai",
-        "kaise ho",
-        "kaise ho bhai",
-        "kaise ho sir",
-        "kaise ho sister",
-        "hii bro",
-        "hi bro",
-        "hi sir",
-        "hello sir",
-        "hello sister",
-        "hi sister",
-        "wassup",
-        "sab thik",
-        "sab badiya",
-        "kya chal raha hai",
-        "kya ho raha hai",
-        "kya kar rahe ho",
-        "hello",
-        "helo",
-        "hey bot",
-        "whats up",
-        "kya hl"
-      ],
-      "reply": "Hey {user_tag}! 👋 Sab ekdum badhiya aur set hai! Aap batao, aaj kya scene hai? Kaunse project ya video par kaam chal raha hai? ✨🔥"
-    },
-    {
-      "category": "Communal Harmony & Anti-Political Hate Warning",
-      "keywords": [
-        "rss",
-        "bjp",
-        "modi",
-        "vhp",
-        "andhbhakt",
-        "shirk",
-        "pakistan",
-        "bangladesh",
-        "hindu muslim",
-        "bhaichara",
-        "dharamyudh",
-        "politics",
-        "communal"
-      ],
-      "reply": "⚠️ **SERIOUS WARNING: NO POLITICS OR RELIGIOUS HATE!**\n\nHey {user_tag}! Yeh group sirf Video Editors, Graphic Designers aur Creators ke liye hai.\n• Indian, Pakistani, Bangladeshi — hum sab creators ek hain aur bhaichara maintain rakhte hain.\n• Political debate (BJP, RSS, VHP, Modi), religious hate, ya 'andhbhakt/shirk' waali trolling **Strictly Banned** hai. Direct kaam aur skills par focus karein, varna immediate ban kar diya jayega!"
-    },
-    {
-      "category": "Sad, Burnout & Emotional Support",
-      "keywords": [
-        "sad",
-        "emotional",
-        "thak gaya",
-        "thak gaya hu",
-        "chhod raha hu",
-        "quit",
-        "leaving youtube",
-        "leave editing",
-        "negative thoughts",
-        "ro raha hu",
-        "depressed",
-        "disturbed",
-        "dil toot gaya",
-        "kuch nahi ho raha",
-        "fail ho gaya"
-      ],
-      "reply": "❤️ **HERO, HAAR MAT MANO!**\n\nHey {user_tag}! Agar aaj thak gaye ho toh rest le lo, par **Quit mat karo**!\n• Har bada YouTuber, Video Editor aur Designer is phase se guzarta hai. Burnout normal hai, par aapka talent real hai.\n• **SabKraftTech Hamesha Aapke Saath Hai!** Ek chhota sa break lo, nayi energy ke saath comeback karo. Aapka best project abhi aana baaki hai! ✨🚀"
-    },
-    {
-      "category": "Online Earning & Tech Monetization",
-      "keywords": [
-        "paisa kaise kamaye",
-        "earning",
-        "earn money",
-        "online earning",
-        "monetization",
-        "sponsorship",
-        "affiliate",
-        "tech earning",
-        "freelance earning",
-        "money",
-        "paise"
-      ],
-      "reply": "💰 **ONLINE EARNING FOR CREATORS!**\n\nHey {user_tag}! Tech & Content Creation se paise kamane ke top 4 ways:\n1. **Client Video Editing & Thumbnail Design:** Creators ko pitch karke monthly ₹15k–₹50k+ earn karein.\n2. **YouTube Tech & Editing Niche:** High RPM niche! Tutorials, App reviews aur AI tools par videos banayein.\n3. **Affiliate & Sponsorships:** Editing materials, course links aur app referral share karein.\n4. **Digital Asset Selling:** Custom PLP files, Lightroom Presets aur FX Packs sell karein!\n\nDetailed guide ke liye Telegram channel me **Earning** search karein! 🚀"
-    },
-    {
-      "category": "Memes, TMKOC, CID & Movie Clips Pack",
-      "keywords": [
-        "tmkoc",
-        "cid",
-        "movie clip",
-        "bollywood meme",
-        "funny meme",
-        "meme pack",
-        "meme clip",
-        "song clip",
-        "funny sfx",
-        "dialogue"
-      ],
-      "reply": "🎭 **VIRAL MEMES, TMKOC & CID PACK!**\n\nHey {user_tag}! Creative Reaction Assets Loaded:\n• **TMKOC & CID Memes:** Daya, Jethalal, ACP Pradyuman iconic reaction clips (No Copyright).\n• **Bollywood & Trending Meme Clips:** High-quality green screen & MP4 cutouts.\n• **Viral Song & SFX Cutouts:** Trending Instagram & Shorts sound effects.\n\n👉 Access all clips using the **Download Overlays & Effects** button or channel files! 🎬"
-    },
-    {
-      "category": "Pro Editing & Graphic Design Hacks",
-      "keywords": [
-        "editing hack",
-        "design hack",
-        "editing secret",
-        "pro tip",
-        "speed ramp",
-        "color grading hack",
-        "capcut hack",
-        "pixellab hack",
-        "workflow"
-      ],
-      "reply": "⚡ **PRO EDITING & DESIGN HACKS!**\n\nHey {user_tag}! Secret Creator Hacks:\n1. **Fast Speed Ramping:** Curve graph me 3-point bounce add karke velocity smooth karein.\n2. **Cinematic Color Grading:** Shadows me Teal (+15) aur Highlights me Orange (+20) push karein.\n3. **Thumbnail Pop Effect:** Character cutout ke pichhe Radial Blur + Inner Glow shadow lagayein.\n4. **Auto Captions Hack:** CapCut AI + custom font file import se 1-click aesthetic subtitle banayein!\n\nChannel par daily short hacks active hain! 🎨🔥"
-    },
-    {
-      "category": "Creator Motivation & Quotes",
-      "keywords": [
-        "motivation",
-        "motivational",
-        "motivate",
-        "quote",
-        "quotes",
-        "demotivate",
-        "give up",
-        "feel low",
-        "editing motivation",
-        "youtube motivation"
-      ],
-      "reply": "🔥 **CREATOR MINDSET!**\n\nHey {user_tag}! Ek baat hamesha yaad rakhna:\n• **Great Editors & Creators** ek din me nahi bante! Har flop video ya rough draft aapke agle viral masterpiece ka base hai.\n• Skill seekhte raho, mehnat continue rakho. Success jhakk maarke pichhe aayegi! 🚀⚡"
-    },
-    {
-      "category": "2026 Creator Tips, Hacks & AI Updates",
-      "keywords": [
-        "2026 tips",
-        "2026 updates",
-        "2026 editing",
-        "2026 youtube algorithm",
-        "2026 hacks",
-        "ai editing 2026",
-        "latest trends 2026",
-        "tips tricks"
-      ],
-      "reply": "⚡ **2026 CREATOR TIPS & HACKS!**\n\nHey {user_tag}! Top algorithm & editing hacks:\n1. **First 3-Sec Visual Hook:** Fast sound design (SFX + Zoom in) use karein.\n2. **AI Workflows:** CapCut & Premiere AI captions + auto cutouts se 2x speed me edit karein.\n3. **High-Contrast Thumbnails:** Minimal text aur glowing face cutouts max CTR de rahe hain.\n\nSabKraftTech channel par daily updates active hain! 🎨🎬"
-    },
-    {
-      "category": "Copyright Claim, Strike & Safe Music",
-      "keywords": [
-        "copyright claim",
-        "copyright strike",
-        "strike aagaya",
-        "claim aagaya",
-        "safe music",
-        "fair use"
-      ],
-      "reply": "🛡️ **COPYRIGHT CLAIM & STRIKE SOLUTION!**\n\nHey {user_tag}!\n• **Claim:** Audio mute karein ya YouTube Audio Library / Channel BGM se replace karein (Monetization hit nahi hoga).\n• **Strike:** Counter notification bhejein agar content aapka hai, ya original owner se contact karein.\n• **Safety Hack:** Audio ki pitch +2% badhayein aur video cuts har 3-5 sec me badlein! ⚠️"
-    },
-    {
-      "category": "AI Voiceover & Clean Audio Tools",
-      "keywords": [
-        "ai voice",
-        "voiceover",
-        "text to speech",
-        "voice enhancer",
-        "clean audio",
-        "elevenlabs",
-        "podcast voice"
-      ],
-      "reply": "🎙️ **AI VOICE & AUDIO ENHANCER TOOLS!**\n\nHey {user_tag}! Pro Audio Tools:\n1. **ElevenLabs / Play.ht:** Realistic Hindi/English Gen-Z AI Voiceover generation.\n2. **Adobe Podcast AI:** Single click me mic-quality audio clean & noise reduction.\n3. **CapCut Noise Reduction:** Mobile me instant background hiss remover.\n\nFree AI voice links channel me pinned hain! 🔊"
-    },
-    {
-      "category": "Font Packs & Typography Styling",
-      "keywords": [
-        "font",
-        "fonts",
-        "best font",
-        "hindi font",
-        "stylish font",
-        "calligraphy",
-        "typography",
-        "font pack"
-      ],
-      "reply": "🔤 **VIRAL FONT PACK & TYPOGRAPHY!**\n\nHey {user_tag}! Top Trending Fonts:\n• **Thumbnails:** Anton, Montserrat Black, Bebas Neue, Rajdhani, Bangers.\n• **Reels/Shorts Captions:** The Bold Font, Komika Axis, Poppins ExtraBold.\n• **Hindi Stylish Fonts:** Kruti Dev, Devlys, Unicode Stylish Fonts.\n\n👉 500+ Font Pack direct Telegram channel se download karein! 🎨"
-    },
-    {
-      "category": "PC & Mobile Specs for Editing",
-      "keywords": [
-        "best mobile for editing",
-        "best pc for editing",
-        "ram requirement",
-        "lag fix",
-        "gpu",
-        "processor",
-        "device"
-      ],
-      "reply": "💻📱 **HARDWARE & DEVICE SPEC GUIDE!**\n\nHey {user_tag}!\n• **Mobile Editing:** Minimum 6GB/8GB RAM + Snapdragon 7-series/8-series or Dimensity 8000+ for 4K CapCut/AM.\n• **PC Editing:** Minimum 16GB RAM, i5 12th Gen / Ryzen 5600 + GTX 1650/RTX 3060 for smooth Premiere/After Effects.\n• **Lag Fix:** Editing se pehle cache clear karein aur proxy resolution mode enable karein! 🚀"
-    },
-    {
-      "category": "Family & Parents Respect",
-      "keywords": [
-        "abbu",
-        "ammi",
-        "mummy",
-        "papa",
-        "bhaiya",
-        "didi",
-        "family",
-        "rishtedar",
-        "ghar wale",
-        "parents",
-        "bhai",
-        "behen",
-        "sister"
-      ],
-      "reply": "❤️ **FAMILY FIRST!**\n\nHey {user_tag}! Aapki mehnat aur struggle ka asli goal aapke parents aur family ke sapne poore karna hai.\n• Unki duayein aur support aapki sabse badi power hai.\n• Focus mat khoo, apne ghar walon ko proud feel karwana hai! ✨👑"
-    },
-    {
-      "category": "GF / BF / Relationship",
-      "keywords": [
-        "girlfriend",
-        "boyfriend",
-        "crush",
-        "love",
-        "breakup",
-        "relationship",
-        "pyaar",
-        "single"
-      ],
-      "reply": "Hey {user_tag}! 💔/❤️ Distractions ko side me rakho aur apne skills/career par focus karo. Jab success milegi, sab line me honge! 🚀"
-    },
-    {
-      "category": "YouTube Category & Growth",
-      "keywords": [
-        "youtube",
-        "ctr",
-        "rpm",
-        "views",
-        "impressions",
-        "seo",
-        "monetization",
-        "shadowban",
-        "algorithm",
-        "shorts views"
-      ],
-      "reply": "Hey {user_tag}! 📈 **YouTube Growth Formula**: High-CTR Thumbnail + First 5 Sec Hook + Proper SEO Title. Analytics check karke batayein kahan drop ho raha hai!"
-    },
-    {
-      "category": "CapCut Pro APK",
-      "keywords": [
-        "capcut",
-        "capcut pro",
-        "capcut apk",
-        "capcut no vpn",
-        "capcut mod"
-      ],
-      "reply": "🎬 **CAPCUT PRO APK**\n\nHey {user_tag}! CapCut Pro Features:\n• No Watermark & 4K 60FPS Export\n• All Pro Effects, Transitions & Auto-Caption Active\n\n👉 Download link ke liye humare official channel par **CapCut** search karein!"
-    },
-    {
-      "category": "Alight Motion & Motion Mods",
-      "keywords": [
-        "alight motion",
-        "alightmotion",
-        "after motion",
-        "gold motion",
-        "xml support",
-        "am mod"
-      ],
-      "reply": "⚡ **ALIGHT / AFTER / GOLD MOTION MODS**\n\nHey {user_tag}! Premium Motion App Features:\n• XML File Import/Export Fully Working\n• No Watermark & 500+ Custom Fonts Support\n• Ultra Smooth Velocity & Shake Effects\n\n👉 Download ke liye channel me **Alight Motion** search karein!"
-    },
-    {
-      "category": "KineMaster Pro APK",
-      "keywords": [
-        "kinemaster",
-        "kinemaster pro",
-        "kinemaster mod",
-        "kine master"
-      ],
-      "reply": "✂️ **KINEMASTER PRO APK**\n\nHey {user_tag}! KineMaster Pro Details:\n• Zero Watermark & Full Asset Store Unlocked\n• Multi-Layer Video & Chroma Key (Green Screen) Fix\n\n👉 Channel par **KineMaster** search karke direct file utha lein!"
-    },
-    {
-      "category": "VN Video Editor",
-      "keywords": [
-        "vn",
-        "vn editor",
-        "vn code",
-        "vn pro",
-        "vn filter"
-      ],
-      "reply": "🎥 **VN VIDEO EDITOR PRO**\n\nHey {user_tag}! VN Editor Key Highlights:\n• Multi-Track Timeline & Speed Curve Tuning\n• No Ads & Free Cinematic LUTs/Filters Import\n\n👉 Check Channel for VN Pro & QR Filters!"
-    },
-    {
-      "category": "MovieBox App",
-      "keywords": [
-        "moviebox",
-        "movie box",
-        "moviebox pro"
-      ],
-      "reply": "🍿 **MOVIEBOX APP**\n\nHey {user_tag}! MovieBox Pro Features:\n• HD Movies & Series Streaming without Ads\n• Fast Direct Server Download Options\n\n👉 Direct APK download link Telegram Channel me upload hai!"
-    },
-    {
-      "category": "Graphic Design Apps (PixelLab, PicsArt & Canva)",
-      "keywords": [
-        "pixellab",
-        "picsart",
-        "photoshop mobile",
-        "graphics app",
-        "design app",
-        "pixellab pro",
-        "remini mod",
-        "canva pro"
-      ],
-      "reply": "🎨 **GRAPHICS DESIGN APPS**\n\nHey {user_tag}! Best Design Apps Specs:\n• **PixelLab Pro:** Custom PLP Projects, 3D Fonts & Ultra HD Render\n• **PicsArt Gold / Canva Pro:** Premium Cutout Tools, PNG Filters & AI Enhancer\n\n👉 Download all Pro APKs from our main channel!"
-    },
-    {
-      "category": "General Premium Mod Apps",
-      "keywords": [
-        "apk",
-        "unlocked apk",
-        "mod apk",
-        "pro apk"
-      ],
-      "reply": "Hey {user_tag}! 📱 **Mod Features Unlocked**: No Watermark + 4K Export + Premium Transitions/Effects Active! Telegram channel par direct APK link pinned hai. 🚀"
-    },
-    {
-      "category": "VFX Screens (Green, Black, Blue Screen)",
-      "keywords": [
-        "green screen",
-        "black screen",
-        "blue screen",
-        "greenscreen",
-        "blackscreen"
-      ],
-      "reply": "🟢🔵 **VFX SCREENS PACK**\n\nHey {user_tag}! Download HD VFX Overlays:\n• Cinematic Black Screen Lyric Effects\n• Gaming & Meme Green/Blue Screen Animations\n\n👉 Neeche diye gaye **Download Overlays** button par click karein!"
-    },
-    {
-      "category": "PNG, APNG, Backgrounds & Overlays",
-      "keywords": [
-        "apng",
-        "light leaks",
-        "png",
-        "overlay",
-        "overlays",
-        "background",
-        "bg"
-      ],
-      "reply": "🖼️ **PNGs, APNGs & OVERLAYS**\n\nHey {user_tag}! Editing Asset Pack:\n• 4K Transparent Character PNGs & Animated APNGs\n• Light Leaks, Particles & Aesthetic Backgrounds\n\n👉 Access all materials using the **Download Materials** button!"
-    },
-    {
-      "category": "Memes, Transitions & FX Packs / Bundles",
-      "keywords": [
-        "meme",
-        "memes",
-        "transition",
-        "transitions",
-        "effects",
-        "editing pack",
-        "bundle",
-        "package",
-        "packege",
-        "bundles",
-        "packages",
-        "luts",
-        "presets"
-      ],
-      "reply": "📦 **MEMES, TRANSITION & ASSET BUNDLES!**\n\nHey {user_tag}! Master Editing Package:\n• Trending Indian & Global Meme Clips (No Copyright)\n• Seamless Sound Effects (Whoosh, Pop, Click) & Transitions\n\n👉 Grab your bundle pack from the channel files!"
-    },
-    {
-      "category": "Thumbnail Packs & Design Elements",
-      "keywords": [
-        "thumbnail pack",
-        "thumbnail materials",
-        "graphics pack",
-        "font pack",
-        "text preset"
-      ],
-      "reply": "🎯 **YOUTUBE THUMBNAIL PACK**\n\nHey {user_tag}! CTR Boosting Assets:\n• 3D Text Presets, Glowing Arrows & Element PNGs\n• High-CTR Font Packs & Color Grids\n\n👉 Direct download available in our Telegram channel!"
-    },
-    {
-      "category": "Editing Materials & Assets General",
-      "keywords": [
-        "material",
-        "materials",
-        "backgrounds"
-      ],
-      "reply": "Hey {user_tag}! 🎨 **4K Editing Pack Loaded**: Premium Overlays, Transitions, PNGs, Presets aur APNG Assets direct Telegram channel par available hain. Niche button par click karke download karein! ⬇️"
-    },
-    {
-      "category": "Music / BGM / SFX",
-      "keywords": [
-        "bgm",
-        "sfx",
-        "no copyright music",
-        "sound effects",
-        "vlog bgm",
-        "phonk",
-        "cinematic bgm",
-        "background music",
-        "sound effect"
-      ],
-      "reply": "Hey {user_tag}! 🎵 **No-Copyright Audio Pack**: High-Energy Phonk, Cinematic BGM aur Whoosh SFX collection channel par uploaded hai! Check out karein. 🎧"
-    },
-    {
-      "category": "Graphics Designing Tips",
-      "keywords": [
-        "thumbnail",
-        "poster",
-        "banner",
-        "psd",
-        "pixelab",
-        "color grading",
-        "graphics",
-        "designing",
-        "lightroom"
-      ],
-      "reply": "Hey {user_tag}! 🎨 **Pro Design Tip**: Contrasting colors, bold clean fonts aur expressive face PNGs use karo. High CTR Guarantee! 🔥"
-    },
-    {
-      "category": "Freelancing & Student Career",
-      "keywords": [
-        "freelance",
-        "freelancing",
-        "client",
-        "clients",
-        "fiverr",
-        "upwork",
-        "portfolio",
-        "student",
-        "rate"
-      ],
-      "reply": "Hey {user_tag}! 💼 **Student/Freelancer Tip**: Apna 3-best videos ka Portfolio drive link banao aur direct creators ko Instagram/Email par cold message karo!"
-    }
-  ]
-}
+import json
+import os
+import re
+import threading
+import logging
+from flask import Flask
+import google.generativeai as genai
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import (
+    ApplicationBuilder,
+    ContextTypes,
+    MessageHandler,
+    filters,
+)
+
+# Logging Setup
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
+)
+
+# ==========================================
+# 1. FLASK WEB SERVER (24/7 KEEP-ALIVE)
+# ==========================================
+app = Flask(__name__)
+
+@app.route("/")
+def health():
+    return "SabKraftTech Ultimate AI Bot is Active & Running!", 200
+
+def run_flask():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port, use_reloader=False)
+
+# ==========================================
+# 2. ENVIRONMENT & BUTTONS CONFIG
+# ==========================================
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
+
+# Official Social Buttons
+OFFICIAL_BUTTONS = InlineKeyboardMarkup([
+    [
+        InlineKeyboardButton("📢 Telegram Channel", url="https://t.me/SabKraftTech"),
+        InlineKeyboardButton("👥 Telegram Group", url="https://t.me/TeamSabKraftTech")
+    ],
+    [
+        InlineKeyboardButton("▶️ YouTube Channel", url="https://youtube.com/@sabkrafttech?si=BvFSMTysyXScxEj2"),
+        InlineKeyboardButton("📸 Instagram ID", url="https://instagram.com/sabkrafttech")
+    ]
+])
+
+# Editing Material Buttons
+MATERIAL_BUTTONS = InlineKeyboardMarkup([
+    [
+        InlineKeyboardButton("📦 Download Overlays & Effects", url="https://t.me/SabKraftTech")
+    ],
+    [
+        InlineKeyboardButton("🎨 Download Presets, PNGs & Fonts", url="https://t.me/SabKraftTech")
+    ],
+    [
+        InlineKeyboardButton("🎵 Download BGM & SFX Packs", url="https://t.me/SabKraftTech")
+    ]
+])
+
+# ==========================================
+# 3. GEMINI AI ENGINE SETUP
+# ==========================================
+SYSTEM_PERSONA = (
+    "You are SabKraftTech AI — an elite, premium, and aesthetic Gen-Z assistant "
+    "for Video Editors, Graphic Designers, YouTubers, Freelancers, and Creators. "
+    "Rule: Every response must be completely unique, ultra-short (2-3 lines max), "
+    "professional, trendy, to-the-point, and styled with high-end aesthetic emojis. Always tag the user cleanly."
+)
+
+def get_ai_model():
+    if not GEMINI_KEY:
+        logging.error("❌ GEMINI_API_KEY is missing!")
+        return None
+    try:
+        genai.configure(api_key=GEMINI_KEY)
+        return genai.GenerativeModel("gemini-1.5-flash")
+    except Exception as e:
+        logging.error(f"❌ AI Init Error: {e}")
+        return None
+
+ai_model = get_ai_model()
+
+def extract_user_tag(update: Update) -> str:
+    user = update.effective_user
+    if not user:
+        return "Creator"
+    if user.username:
+        return f"@{user.username}"
+    return f"[{user.first_name}](tg://user?id={user.id})"
+
+# ==========================================
+# 4. SMART PHRASE MATCHING JSON FILTERS
+# ==========================================
+def load_json_config():
+    if os.path.exists("filters.json"):
+        try:
+            with open("filters.json", "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            logging.error(f"JSON Load Error: {e}")
+    return {"button_triggers": [], "custom_rules": []}
+
+def get_filter_reply(lower_text: str, user_tag: str) -> str:
+    config = load_json_config()
+    rules = config.get("custom_rules", [])
+    user_words = set(lower_text.split())
+    
+    for rule in rules:
+        keywords = rule.get("keywords", [])
+        for kw in keywords:
+            kw_lower = kw.lower().strip()
+            # If keyword has spaces (phrase), check as substring. If single word, match exact or in words.
+            if " " in kw_lower:
+                if kw_lower in lower_text:
+                    reply = rule.get("reply", "")
+                    return reply.replace("{user_tag}", user_tag)
+            else:
+                if kw_lower == lower_text or kw_lower in user_words:
+                    reply = rule.get("reply", "")
+                    return reply.replace("{user_tag}", user_tag)
+    return ""
+
+def is_only_emoji(text: str) -> bool:
+    emoji_pattern = re.compile(r"^[\s\U00010000-\U0010ffff\u2600-\u26ff\u2700-\u27bf]+$")
+    return bool(emoji_pattern.match(text))
+
+# ==========================================
+# 5. MAIN MESSAGE HANDLER
+# ==========================================
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message:
+        return
+
+    chat_type = update.message.chat.type
+    user_tag = extract_user_tag(update)
+    bot_username = context.bot.username or ""
+    is_group = chat_type in ["group", "supergroup"]
+
+    user_text = update.message.text or update.message.caption or ""
+    user_text_clean = user_text.strip()
+    lower_text = user_text_clean.lower()
+
+    # 1. Anti-Spam Link Blocker (Group chats)
+    if is_group and user_text_clean:
+        if re.search(r"http[s]?://|t\.me/|telegram\.me/", user_text_clean):
+            try:
+                await update.message.delete()
+                return
+            except Exception:
+                pass
+
+    # 2. Mention Check in Groups
+    if is_group:
+        is_tagged = (bot_username and f"@{bot_username}" in user_text_clean) or (
+            update.message.reply_to_message
+            and update.message.reply_to_message.from_user
+            and update.message.reply_to_message.from_user.id == context.bot.id
+        )
+        if not is_tagged:
+            return
+
+    # 3. Dynamic Button Triggers
+    material_keywords = [
+        "material", "materials", "overlay", "transition",
+        "preset", "png", "bgm", "sfx", "font", "apk", "download",
+        "bundle", "package", "packege", "bundles", "packages"
+    ]
+    official_keywords = ["sabkraft", "sabkrafttech", "admin", "malik", "owner"]
+
+    show_official = any(kw in lower_text for kw in official_keywords)
+    show_material = any(kw in lower_text for kw in material_keywords)
+
+    reply_text = ""
+
+    # Step A: Check JSON Filters (With Smart Phrase Matching)
+    matched_reply = get_filter_reply(lower_text, user_tag)
+    if matched_reply:
+        reply_text = matched_reply
+
+    # Step B: Emoji or Sticker Response
+    elif is_only_emoji(user_text_clean) or update.message.sticker:
+        reply_text = f"✨ Hey {user_tag}! 🔥 Great vibe! Aaj editing ka kaunsa masterpiece chal raha hai? 🎬"
+
+    # Step C: Screenshot Vision AI Scan
+    elif update.message.photo:
+        try:
+            photo_file = await update.message.photo[-1].get_file()
+            photo_bytes = await photo_file.download_as_bytearray()
+            image_part = {"mime_type": "image/jpeg", "data": bytes(photo_bytes)}
+
+            query_prompt = user_text_clean if user_text_clean else "Error Screenshot"
+            full_prompt = f"{SYSTEM_PERSONA}\n\nUser Tag: {user_tag}\nQuery/Error: {query_prompt}\nAnalyze this image error and give a quick 2-step fix."
+
+            model = ai_model or get_ai_model()
+            if model:
+                res = model.generate_content([full_prompt, image_part])
+                reply_text = res.text
+            else:
+                reply_text = f"✨ Hey {user_tag}! Screenshot received. Please mention your app name! ⚡"
+        except Exception as e:
+            logging.error(f"Vision Error: {e}")
+            reply_text = f"✨ Hey {user_tag}! Screenshot processed, details share karo! 🛠️"
+
+    # Step D: General Unique Contextual Query via Gemini AI
+    elif user_text_clean:
+        try:
+            model = ai_model or get_ai_model()
+            if model:
+                full_prompt = f"{SYSTEM_PERSONA}\n\nUser Tag: {user_tag}\nQuery: {user_text_clean}"
+                res = model.generate_content(full_prompt)
+                reply_text = res.text
+            else:
+                reply_text = f"✨ Hey {user_tag}! AI not configured. Check Render API Key! ⚠️"
+        except Exception as e:
+            logging.error(f"Gemini API Execution Error: {e}")
+            reply_text = f"✨ Hey {user_tag}! Apni query thoda aur detail me poochhein, main ready hoon! 💡"
+
+    # Step E: Send Final Reply with Markup
+    if reply_text:
+        markup = None
+        if show_official:
+            markup = OFFICIAL_BUTTONS
+        elif show_material:
+            markup = MATERIAL_BUTTONS
+
+        try:
+            await update.message.reply_text(
+                reply_text,
+                reply_markup=markup,
+                parse_mode="Markdown"
+            )
+        except Exception:
+            try:
+                await update.message.reply_text(reply_text, reply_markup=markup)
+            except Exception:
+                pass
+
+# ==========================================
+# 6. APP LAUNCHER
+# ==========================================
+def main():
+    threading.Thread(target=run_flask, daemon=True).start()
+
+    if not TELEGRAM_TOKEN:
+        logging.error("❌ TELEGRAM_BOT_TOKEN missing!")
+        return
+
+    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+    application.add_handler(
+        MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
+    )
+
+    logging.info("🚀 SabKraftTech Bot active and polling (drop_pending_updates=True)...")
+    application.run_polling(drop_pending_updates=True)
+
+if __name__ == "__main__":
+    main()
