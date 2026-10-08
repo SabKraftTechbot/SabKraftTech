@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 import re
 import threading
@@ -7,7 +8,6 @@ import google.generativeai as genai
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     ApplicationBuilder,
-    CommandHandler,
     ContextTypes,
     MessageHandler,
     filters,
@@ -21,7 +21,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-  return "SabKraftTech Dynamic AI Bot is Active!", 200
+  return "SabKraftTech JSON-Driven AI Bot Active!", 200
 
 
 def run_flask():
@@ -34,9 +34,7 @@ def run_flask():
 # ==========================================
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
-ADMIN_ID = int(os.environ.get("ADMIN_TELEGRAM_ID", "0"))
 
-# Official Buttons (Sirf SabKraftTech ya Admin likhne par hi dikhenge)
 MAIN_BUTTONS = InlineKeyboardMarkup([
     [
         InlineKeyboardButton(
@@ -58,50 +56,42 @@ MAIN_BUTTONS = InlineKeyboardMarkup([
 ])
 
 # ==========================================
-# 3. GEMINI AI SYSTEM INSTRUCTIONS
+# 3. GEMINI AI SETUP
 # ==========================================
 SYSTEM_INSTRUCTION = """
-You are SabKraftTech Official AI Assistant — an intellectual, short-replying, Gen-Z digital partner for Video Editors, Graphic Designers, YouTubers, Freelancers, and Students.
+You are SabKraftTech AI Assistant — a smart, short-replying, Gen-Z digital partner for Video Editors, Designers, YouTubers, Freelancers, and Students.
 
 CORE RULES:
-1. ALWAYS TAG USER: Address the user using their exact tag/name provided in context.
-2. SHORT & CRISP: Maximum 2 to 3 short sentences or bullet points per response. No long lectures!
-3. SPECIFIC GREETINGS RESPONSES:
-   - Muslim (aslm, salam, ramzan, eid, etc.): Respond with respectful "Walaikum Assalam" / Mubarakbaad + Tag.
-   - Hindu (namaste, jai shree ram, diwali, holi, etc.): Respond with respectful "Namaste" / Shubhkaamnayein + Tag.
-   - Time-based (GM, GN, GE, Good Morning/Night/Evening): Respond specifically according to morning, evening, or night context + Tag.
-   - Bye/Take Care: Send warm exit wishes + Tag.
-4. DOMAIN HELP (APK, Video Editing, Graphics, YouTube, Tools):
-   - Give direct, 2-step practical actionable short guide (CapCut, Alight Motion, PixelLab, XML, RPM/CTR, Photoshop).
-5. MYSTERY OWNER RULE:
-   - If asked who is owner/admin/created this: "Unhone identity reveal nahi ki hai! Baki main SabKraftTech AI hu."
-6. TONE: Clean Hinglish (Latin script Hindi), bold key points, professional & aesthetic emojis (✨, ⚡, 🎬, 🚀, 💡, 🎨).
+1. ALWAYS TAG USER: Use the exact tag/name provided in context.
+2. CRISP & SHORT: Max 2 to 3 short lines. No long lectures!
+3. TECH HELP: Direct 2-step solution for CapCut, Alight Motion, PixelLab, XML, RPM/CTR, Photoshop, Canva.
+4. TONE: Clean Hinglish (Latin script), bold highlights, smart emojis (✨, ⚡, 🎬, 🚀, 💡, 🎨).
 """
-
-LIVE_SYSTEM_PROMPT = SYSTEM_INSTRUCTION
 
 
 def get_gemini_model():
   if not GEMINI_KEY:
     return None
-  genai.configure(api_key=GEMINI_KEY)
-
-  candidate_models = [
-      "gemini-2.0-flash",
-      "gemini-1.5-flash-latest",
-      "gemini-1.5-flash",
-      "gemini-1.5-pro",
-  ]
-  for m in candidate_models:
-    try:
-      return genai.GenerativeModel(
-          model_name=m, system_instruction=LIVE_SYSTEM_PROMPT
-      )
-    except Exception:
-      continue
-  return genai.GenerativeModel(
-      model_name="gemini-1.5-flash", system_instruction=LIVE_SYSTEM_PROMPT
-  )
+  try:
+    genai.configure(api_key=GEMINI_KEY)
+    candidate_models = [
+        "gemini-2.0-flash",
+        "gemini-1.5-flash-latest",
+        "gemini-1.5-flash",
+        "gemini-1.5-pro",
+    ]
+    for m in candidate_models:
+      try:
+        return genai.GenerativeModel(
+            model_name=m, system_instruction=SYSTEM_INSTRUCTION
+        )
+      except Exception:
+        continue
+    return genai.GenerativeModel(
+        model_name="gemini-1.5-flash", system_instruction=SYSTEM_INSTRUCTION
+    )
+  except Exception:
+    return None
 
 
 ai_model = get_gemini_model()
@@ -117,31 +107,33 @@ def get_user_tag(update: Update) -> str:
 
 
 # ==========================================
-# 4. LIVE ADMIN COMMAND (/setprompt)
+# 4. JSON CONFIG & FILTER READER
 # ==========================================
-async def set_prompt_command(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-):
-  global LIVE_SYSTEM_PROMPT, ai_model
-  if ADMIN_ID != 0 and update.effective_user.id != ADMIN_ID:
-    return
+def load_json_filters():
+  if os.path.exists("filters.json"):
+    try:
+      with open("filters.json", "r", encoding="utf-8") as f:
+        return json.load(f)
+    except Exception as e:
+      print(f"Error loading filters.json: {e}")
+  return {"button_triggers": [], "custom_rules": []}
 
-  new_prompt = " ".join(context.args)
-  if not new_prompt:
-    await update.message.reply_text(
-        "⚠️ Usage: `/setprompt Naya prompt text`", parse_mode="Markdown"
-    )
-    return
 
-  LIVE_SYSTEM_PROMPT = new_prompt
-  ai_model = get_gemini_model()
-  await update.message.reply_text(
-      "✅ **AI Instruction Prompt Live Update Ho Gaya!**", parse_mode="Markdown"
-  )
+def get_json_response(lower_text: str, user_tag: str):
+  config = load_json_filters()
+  rules = config.get("custom_rules", [])
+
+  for rule in rules:
+    keywords = rule.get("keywords", [])
+    if any(kw in lower_text for kw in keywords):
+      reply_template = rule.get("reply", "")
+      return reply_template.replace("{user_tag}", user_tag)
+
+  return None
 
 
 # ==========================================
-# 5. MAIN UNIFIED MESSAGE HANDLER
+# 5. UNIFIED MESSAGE HANDLER
 # ==========================================
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
   if not update.message:
@@ -156,7 +148,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
   user_text_clean = user_text.strip()
   lower_text = user_text_clean.lower()
 
-  # 1. Anti-Spam Link Blocker (Group me)
+  # 1. Anti-Spam Link Blocker
   if is_group and user_text_clean:
     if re.search(r"http[s]?://|t\.me/|telegram\.me/", user_text_clean):
       try:
@@ -175,26 +167,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_tagged:
       return
 
-  # 3. STRICT BUTTON TRIGGER CONDITION
-  # Buttons SIRF TABHI AAYENGE jab user "sabkrafttech" ya "admin" ya official links puchega
-  button_triggers = [
-      "sabkrafttech",
-      "admin",
-      "malik",
-      "owner",
-      "channel",
-      "group",
-      "youtube",
-      "instagram",
-      "social",
-      "links",
-  ]
+  # 3. Dynamic Button Triggers from JSON
+  config = load_json_filters()
+  button_triggers = config.get(
+      "button_triggers", ["sabkrafttech", "admin", "channel", "group"]
+  )
   show_buttons = any(kw in lower_text for kw in button_triggers)
 
   reply_text = ""
 
-  # 4. Screenshot Error Processing (Vision AI)
-  if update.message.photo:
+  # 4. Check JSON Custom Filters First
+  json_reply = get_json_response(lower_text, user_tag)
+  if json_reply:
+    reply_text = json_reply
+
+  # 5. Vision AI (Screenshot Error Scan)
+  elif update.message.photo:
     try:
       photo_file = await update.message.photo[-1].get_file()
       photo_bytes = await photo_file.download_as_bytearray()
@@ -202,21 +190,23 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
       prompt = [
           (
-              f"User Tag: {user_tag}\nContext: {user_text_clean or 'Is'}"
-              " screenshot ko analyze karke short 2-step solution do."
+              f"User Tag: {user_tag}\nContext: {user_text_clean or 'Is"
+              " screenshot ko analyze karke short 2-step solution do.'}"
           ),
           image_part,
       ]
       if ai_model:
         res = ai_model.generate_content(prompt)
         reply_text = res.text
+      else:
+        reply_text = (
+            f"✨ Hey {user_tag}! Screenshot scan filhaal busy hai. Problem text"
+            " me batayein!"
+        )
     except Exception:
-      reply_text = (
-          f"✨ Hey {user_tag}! Screenshot scan me error aaya. Text me problem"
-          " batayein!"
-      )
+      reply_text = f"✨ Hey {user_tag}! Problem text me likhkar poochein!"
 
-  # 5. Smart Contextual Dynamic Text Response
+  # 6. Gemini AI Fallback for Complex Queries
   elif user_text_clean:
     try:
       if ai_model:
@@ -226,11 +216,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         res = ai_model.generate_content(prompt)
         reply_text = res.text
       else:
-        reply_text = f"✨ Hey {user_tag}! Batayein, aaj kya help karu?"
+        reply_text = (
+            f"✨ Hey {user_tag}! Batayein, aapki video editing ya channel me"
+            " kya help chahiye?"
+        )
     except Exception:
-      reply_text = f"✨ Hey {user_tag}! Batayein, aapki kya help kar sakta hu?"
+      reply_text = (
+          f"✨ Hey {user_tag}! Batayein, aapki video editing ya channel me"
+          " kya help chahiye?"
+      )
 
-  # 6. Send Response
+  # 7. Send Final Message
   if reply_text:
     markup = MAIN_BUTTONS if show_buttons else None
     try:
@@ -252,15 +248,13 @@ def main():
     return
 
   application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-  application.add_handler(CommandHandler("setprompt", set_prompt_command))
   application.add_handler(
       MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
   )
 
-  print("🚀 SabKraftTech Ultimate AI Bot Active!")
+  print("🚀 SabKraftTech JSON Filter Bot Active!")
   application.run_polling()
 
 
 if __name__ == "__main__":
   main()
-        
