@@ -51,9 +51,7 @@ def run_flask():
 # 3. BOT CONFIG & BUTTON LAYOUTS
 # ==========================================
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-
-# Set ADMIN_ID in your environment variables or paste your Telegram User ID here
-ADMIN_ID = int(os.environ.get("ADMIN_ID", "0"))
+ADMIN_ID = int(os.environ.get("ADMIN_ID", "1391169804"))
 
 OFFICIAL_BUTTONS = InlineKeyboardMarkup([
     [
@@ -71,7 +69,18 @@ MATERIAL_BUTTONS = InlineKeyboardMarkup([
 ])
 
 # ==========================================
-# 4. DYNAMIC JSON FILTER MANAGEMENT
+# 4. SMART USER TAGGING HELPER
+# ==========================================
+def extract_user_tag(msg) -> str:
+    user = msg.from_user if msg else None
+    if not user:
+        return "Creator"
+    if user.username:
+        return f"@{user.username}"
+    return f"[{user.first_name}](tg://user?id={user.id})"
+
+# ==========================================
+# 5. DYNAMIC JSON FILTER MANAGEMENT
 # ==========================================
 FILTERS_FILE = "filters.json"
 
@@ -108,7 +117,6 @@ def match_keyword_smart(kw: str, text: str) -> bool:
 def find_matching_filter(text_lower: str):
     filters_list = load_filters()
     for item in filters_list:
-        # Check if filter is active (default is True)
         if not item.get("active", True):
             continue
 
@@ -118,16 +126,8 @@ def find_matching_filter(text_lower: str):
                 return item
     return None
 
-def extract_user_tag(msg) -> str:
-    user = msg.from_user if msg else None
-    if not user:
-        return "Creator"
-    if user.username:
-        return f"@{user.username}"
-    return f"[{user.first_name}](tg://user?id={user.id})"
-
 # ==========================================
-# 5. CREATOR & EDITOR PERSONA GEMINI AI
+# 6. GEMINI AI FALLBACK ENGINE
 # ==========================================
 async def get_ai_response(user_text: str, user_name: str) -> str:
     if not ai_model:
@@ -158,11 +158,11 @@ async def get_ai_response(user_text: str, user_name: str) -> str:
         return f"✨ **Hey {user_name}!**\n\nSabKraftTech community me aapka swagat hai! Bataiye aaj konse editing asset ya query me help chahiye?"
 
 # ==========================================
-# 6. ADMIN COMMAND HANDLERS
+# 7. TELEGRAM ADMIN COMMAND HANDLERS
 # ==========================================
 def is_admin(user_id: int) -> bool:
     if ADMIN_ID == 0:
-        return True  # If ADMIN_ID is not configured, allows commands or logging alert
+        return True
     return user_id == ADMIN_ID
 
 async def add_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -173,15 +173,33 @@ async def add_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await msg.reply_text("⛔ **Access Denied:** Sirf Admin hi filters modify kar sakta hai!")
         return
 
+    reply_to = msg.reply_to_message
+    file_id = None
+    file_type = None
+
+    # Handle Rose-style media/document attachments (APKs, Files, Images)
+    if reply_to:
+        if reply_to.document:
+            file_id = reply_to.document.file_id
+            file_type = "document"
+        elif reply_to.photo:
+            file_id = reply_to.photo[-1].file_id
+            file_type = "photo"
+        elif reply_to.video:
+            file_id = reply_to.video.file_id
+            file_type = "video"
+        elif reply_to.audio:
+            file_id = reply_to.audio.file_id
+            file_type = "audio"
+
     text = " ".join(context.args)
-    if "|" not in text:
+    if "|" not in text and not file_id:
         help_text = (
             "❌ **Invalid Format!**\n\n"
-            "**Usage:**\n"
+            "**Text Filter Usage:**\n"
             "`/addfilter keyword1, keyword2 | Reply text here | button_type`\n\n"
-            "**Button Types:** `official`, `material`, `none`\n\n"
-            "**Example:**\n"
-            "`/addfilter capcut apk, capcut mod | 🎬 CapCut Pro APK Link: https://t.me/SabKraftTech/123 | material`"
+            "**APK/File Filter Usage (Reply to any File/APK):**\n"
+            "`/addfilter keyword1, keyword2 | Caption text here | material`"
         )
         await msg.reply_text(help_text, parse_mode="Markdown")
         return
@@ -189,7 +207,8 @@ async def add_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     parts = text.split("|")
     raw_keywords = parts[0].strip().lower().split(",")
     keywords = [k.strip() for k in raw_keywords if k.strip()]
-    reply_content = parts[1].strip()
+    
+    reply_content = parts[1].strip() if len(parts) > 1 else (reply_to.caption if reply_to and reply_to.caption else "")
     button_type = parts[2].strip().lower() if len(parts) > 2 else "none"
 
     if button_type not in ["official", "material", "none"]:
@@ -197,14 +216,19 @@ async def add_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     filters_list = load_filters()
     
-    # Check if keyword group already exists to update it
+    # Check if keyword already exists to OVERWRITE / MODIFY it
     updated = False
     for f_item in filters_list:
         existing_kws = [k.lower() for k in f_item.get("keywords", [])]
         if any(k in existing_kws for k in keywords):
             f_item["reply"] = reply_content
             f_item["button_type"] = button_type
+            f_item["file_id"] = file_id
+            f_item["file_type"] = file_type
             f_item["active"] = True
+            for k in keywords:
+                if k not in existing_kws:
+                    f_item["keywords"].append(k)
             updated = True
             break
 
@@ -213,12 +237,15 @@ async def add_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "keywords": keywords,
             "reply": reply_content,
             "button_type": button_type,
+            "file_id": file_id,
+            "file_type": file_type,
             "active": True
         })
 
     if save_filters(filters_list):
+        media_str = f" 📦 ({file_type.upper()} Attached)" if file_id else ""
         await msg.reply_text(
-            f"✅ **Filter Saved Successfully!**\n\n"
+            f"✅ **Filter Saved/Modified Successfully!**{media_str}\n\n"
             f"🔑 **Keywords:** `{', '.join(keywords)}`\n"
             f"💬 **Reply:** {reply_content}\n"
             f"🔘 **Button:** `{button_type}`",
@@ -304,7 +331,8 @@ async def list_filters_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         status = "🟢" if f_item.get("active", True) else "🔴"
         kws = ", ".join(f_item.get("keywords", []))
         btn = f_item.get("button_type", "none")
-        out += f"{idx}. {status} `{kws}` | Button: `{btn}`\n"
+        has_file = "📦 FILE" if f_item.get("file_id") else "📝 TEXT"
+        out += f"{idx}. {status} [{has_file}] `{kws}` | Button: `{btn}`\n"
 
     await msg.reply_text(out, parse_mode="Markdown")
 
@@ -320,7 +348,7 @@ async def clear_filters_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await msg.reply_text("🗑️ Saare custom filters successfully clear kar diye gaye!")
 
 # ==========================================
-# 7. AUTO-DELETE HELPER (300 SECONDS)
+# 8. AUTO-DELETE HELPER (300 SECONDS)
 # ==========================================
 async def delete_message_after_delay(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message_id: int, delay: int = 300):
     await asyncio.sleep(delay)
@@ -330,7 +358,7 @@ async def delete_message_after_delay(context: ContextTypes.DEFAULT_TYPE, chat_id
         pass
 
 # ==========================================
-# 8. CORE MESSAGE HANDLER
+# 9. CORE MESSAGE HANDLER
 # ==========================================
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
@@ -373,35 +401,46 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # 🟢 5. RESPONSE GENERATION FOR REAL MEMBERS
     matched_filter = find_matching_filter(lower_text)
-    reply_text = ""
-    markup = None
+    sent_message = None
 
     if matched_filter:
         raw_reply = matched_filter.get("reply", "")
-        reply_text = raw_reply.replace("{user_tag}", user_tag)
+        reply_text = raw_reply.replace("{user_tag}", user_tag).replace("{username}", user_tag)
         btn_type = matched_filter.get("button_type", "none")
+        
+        file_id = matched_filter.get("file_id")
+        file_type = matched_filter.get("file_type")
 
+        markup = None
         if btn_type == "official":
             markup = OFFICIAL_BUTTONS
         elif btn_type == "material":
             markup = MATERIAL_BUTTONS
+
+        # Send File/APK if attached
+        if file_id:
+            try:
+                if file_type == "document":
+                    sent_message = await msg.reply_document(document=file_id, caption=reply_text, reply_markup=markup, parse_mode="Markdown")
+                elif file_type == "photo":
+                    sent_message = await msg.reply_photo(photo=file_id, caption=reply_text, reply_markup=markup, parse_mode="Markdown")
+                elif file_type == "video":
+                    sent_message = await msg.reply_video(video=file_id, caption=reply_text, reply_markup=markup, parse_mode="Markdown")
+            except Exception as e:
+                logging.warning(f"Media send fallback: {e}")
+                sent_message = await msg.reply_text(reply_text, reply_markup=markup)
         else:
-            markup = None
+            try:
+                sent_message = await msg.reply_text(reply_text, reply_markup=markup, parse_mode="Markdown")
+            except Exception:
+                sent_message = await msg.reply_text(reply_text, reply_markup=markup)
     else:
         # Greetings / Complex Queries -> Pro Video Editor Gemini AI
         reply_text = await get_ai_response(user_text_clean, user_name)
-        markup = None
-
-    # Send Reply safely without crashing on Markdown parse errors
-    sent_message = None
-    try:
-        sent_message = await msg.reply_text(reply_text, reply_markup=markup, parse_mode="Markdown")
-    except Exception as e:
-        logging.warning(f"Markdown failed, falling back to plain text: {e}")
         try:
-            sent_message = await msg.reply_text(reply_text, reply_markup=markup)
-        except Exception as err:
-            logging.error(f"Failed to send message: {err}")
+            sent_message = await msg.reply_text(reply_text, parse_mode="Markdown")
+        except Exception:
+            sent_message = await msg.reply_text(reply_text)
 
     # Auto-delete in 5 mins (Groups only)
     if sent_message and is_group:
@@ -410,7 +449,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 # ==========================================
-# 9. APP STARTUP
+# 10. APP STARTUP
 # ==========================================
 def main():
     threading.Thread(target=run_flask, daemon=True).start()
@@ -428,7 +467,7 @@ def main():
     application.add_handler(CommandHandler("listfilters", list_filters_cmd))
     application.add_handler(CommandHandler("clearfilters", clear_filters_cmd))
 
-    # Catch ALL non-command group events (Text, Photos, Captions, Documents)
+    # Catch ALL non-command group events
     all_group_messages_filter = ~filters.COMMAND & ~filters.StatusUpdate.ALL
     application.add_handler(MessageHandler(all_group_messages_filter, handle_message))
 
@@ -437,4 +476,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
