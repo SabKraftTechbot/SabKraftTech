@@ -86,26 +86,13 @@ def extract_user_tag(update: Update) -> str:
 # ==========================================
 # 4. AUTO-DELETE HELPER (5 MINUTES / 300 SECONDS)
 # ==========================================
-def schedule_auto_delete(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message_id: int):
-    def delete_task():
-        async def do_delete():
-            try:
-                await context.bot.delete_message(chat_id=chat_id, message_id=message_id)
-            except Exception:
-                pass
-        
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                asyncio.run_coroutine_threadsafe(do_delete(), loop)
-            else:
-                loop.run_until_complete(do_delete())
-        except Exception:
-            pass
-
-    timer = threading.Timer(300.0, delete_task)
-    timer.daemon = True
-    timer.start()
+async def delete_message_after_delay(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message_id: int, delay: int = 300):
+    """Safe async delay auto-delete task."""
+    await asyncio.sleep(delay)
+    try:
+        await context.bot.delete_message(chat_id=chat_id, message_id=message_id)
+    except Exception as e:
+        logging.debug(f"Auto-delete failed or message already deleted: {e}")
 
 # ==========================================
 # 5. CORE MESSAGE HANDLER
@@ -149,7 +136,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     matched_filter = find_matching_filter(lower_text)
 
-    # If in Group: Ignore forwarded posts or messages that are neither tagged nor match a filter
+    # If in Group: Ignore messages that are neither tagged nor match a filter
     if is_group_or_channel:
         is_forwarded = bool(update.message.forward_origin or update.message.forward_from_chat or update.message.forward_from)
         if is_forwarded and not is_tagged and not matched_filter:
@@ -196,7 +183,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # D. AUTO-DELETE IN 5 MINS (300 SECONDS)
     # ------------------------------------------
     if sent_message and is_group_or_channel:
-        schedule_auto_delete(context, update.message.chat_id, sent_message.message_id)
+        asyncio.create_task(
+            delete_message_after_delay(context, update.message.chat_id, sent_message.message_id, 300)
+        )
 
 # ==========================================
 # 6. APP STARTUP
@@ -218,29 +207,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-# 1. User name tag replace karein
-user_name = update.effective_user.first_name
-reply_text = filter_item["reply"].replace("{user_tag}", user_name)
-
-# 2. Context ke hisab se Buttons set karein
-reply_markup = None
-
-if filter_item.get("button_type") == "material":
-    reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("📁 Explore Materials Channel", url="https://t.me/SabKraftTech")]
-    ])
-elif filter_item.get("button_type") == "official":
-    reply_markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("📢 Telegram Channel", url="https://t.me/SabKraftTech")],
-        [InlineKeyboardButton("👥 Community Group", url="https://t.me/TeamSabKraftTech")],
-        [InlineKeyboardButton("▶️ YouTube Channel", url="https://youtube.com/@SabKraftTech"),
-         InlineKeyboardButton("📸 Instagram", url="https://instagram.com/sabkrafttech")]
-    ])
-
-# 3. Message send karein
-await update.message.reply_text(
-    text=reply_text,
-    reply_markup=reply_markup,
-    parse_mode="Markdown"
-    )
     
