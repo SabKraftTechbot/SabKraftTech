@@ -76,7 +76,6 @@ def get_ai_model():
         return None
     try:
         genai.configure(api_key=GEMINI_KEY)
-        # Temperature 0.8 ensures high creativity and NO repetition
         generation_config = genai.types.GenerationConfig(temperature=0.8)
         return genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=generation_config)
     except Exception:
@@ -128,14 +127,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     chat_type = update.message.chat.type
     user_tag = extract_user_tag(update)
-    bot_username = context.bot.username or ""
     is_group = chat_type in ["group", "supergroup"]
 
     user_text = update.message.text or update.message.caption or ""
     user_text_clean = user_text.strip()
     lower_text = user_text_clean.lower()
 
-    # Link & Spam Blocker
+    # Link & Spam Blocker in Groups
     if is_group and user_text_clean:
         if re.search(r"http[s]?://|t\.me/|telegram\.me/", user_text_clean):
             try:
@@ -144,19 +142,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception:
                 pass
 
-    # Mention Check for Groups
-    if is_group:
-        is_tagged = (bot_username and f"@{bot_username}" in user_text_clean) or (
-            update.message.reply_to_message
-            and update.message.reply_to_message.from_user
-            and update.message.reply_to_message.from_user.id == context.bot.id
-        )
-        if not is_tagged:
-            return
-
     # Button Triggers
-    apk_keywords = ["apk", "capcut", "alight motion", "kinemaster", "vn", "pixellab", "picsart", "download", "mod", "premium"]
-    material_keywords = ["material", "materials", "overlay", "transition", "preset", "png", "bgm", "sfx", "font", "bundle"]
+    apk_keywords = ["apk", "capcut", "alight motion", "kinemaster", "vn", "pixellab", "picsart", "download", "mod", "premium", "apps", "modes"]
+    material_keywords = ["material", "materials", "overlay", "transition", "preset", "png", "bgm", "sfx", "font", "bundle", "package"]
     official_keywords = ["sabkraft", "sabkrafttech", "admin", "malik", "owner", "creator", "youtube", "instagram"]
 
     is_apk_query = any(kw in lower_text for kw in apk_keywords)
@@ -166,7 +154,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_text = ""
     model = ai_model or get_ai_model()
 
-    # Base Prompt
     dynamic_prompt = (
         f"{SYSTEM_PERSONA}\n\n"
         f"User Tag: {user_tag}\n"
@@ -175,7 +162,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     matched_rule = get_matched_rule(lower_text)
 
-    # Logic 1: Image/Screenshot Processing
+    # Logic 1: Image Processing
     if update.message.photo:
         try:
             photo_file = await update.message.photo[-1].get_file()
@@ -193,20 +180,18 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif is_only_emoji(user_text_clean) or update.message.sticker:
         reply_text = f"✨ Amazing vibe {user_tag}! 🔥 Aaj konsa premium APK chahiye ya video edit karni hai? 🎬"
 
-    # Logic 3: JSON Filter Match (Dynamic Generation)
+    # Logic 3: JSON Filter Match
     elif matched_rule:
         category = matched_rule.get("category", "")
         base_reply = matched_rule.get("reply", "")
         
-        # Strict Static Reply for Warnings
         if "WARNING" in category or "Hate Speech" in category:
             reply_text = base_reply.replace("{user_tag}", user_tag)
         else:
             dynamic_prompt += (
-                f"\n[INTERNAL SYSTEM ALERT]: This message matches our '{category}' rule. "
-                f"The standard rule reply is: '{base_reply}'.\n"
-                f"TASK: Write a COMPLETELY NEW, fresh 2-line response that handles this '{category}' situation creatively. "
-                f"Always try to connect it subtly to Content Creation, YouTube, or Premium Editing tools."
+                f"\n[INTERNAL SYSTEM ALERT]: Matches '{category}' rule. "
+                f"Base reply: '{base_reply}'.\n"
+                f"TASK: Write a COMPLETELY NEW, fresh 2-line response. Connect subtly to Content Creation, YouTube, or Premium Editing tools."
             )
             try:
                 if model:
@@ -215,12 +200,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception:
                 reply_text = base_reply.replace("{user_tag}", user_tag)
 
-    # Logic 4: Everything Else (Casual Chats, Unknown Queries)
+    # Logic 4: Direct Chat / Everyday Messages
     elif user_text_clean:
         dynamic_prompt += (
-            "\nTASK: Generate a highly aesthetic, premium, and 100% unique 2-line response. "
-            "If it's just 'hi/hello' or daily chat, give a unique creative welcome every time and ask how you can help with Premium APKs, Video Editing, or YouTube Guidelines. "
-            "Understand the context and answer accordingly."
+            "\nTASK: Generate an aesthetic, premium, 100% unique 2-line response. "
+            "Smoothly offer help with Premium APKs, Video Editing, or YouTube Guidelines."
         )
         try:
             if model:
@@ -233,7 +217,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Send Final Output
     if reply_text:
         markup = None
-        # Agar user ne APK ya material manga hai, toh MATERIAL_BUTTONS dikhao (Jisme pehla button ab APK ka hai)
         if is_apk_query or is_material_query:
             markup = MATERIAL_BUTTONS
         elif show_official:
@@ -267,4 +250,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
