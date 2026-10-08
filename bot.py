@@ -24,7 +24,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def health():
-    return "SabKraftTech Professional Aesthetic Bot Online!", 200
+    return "SabKraftTech Auto-Delete Bot Online!", 200
 
 def run_flask():
     port = int(os.environ.get("PORT", 8080))
@@ -84,7 +84,31 @@ def extract_user_tag(update: Update) -> str:
     return f"[{user.first_name}](tg://user?id={user.id})"
 
 # ==========================================
-# 4. CORE MESSAGE HANDLER (AESTHETIC & TARGETED)
+# 4. AUTO-DELETE HELPER FUNCTION (5 MINUTES)
+# ==========================================
+def schedule_message_deletion(context, chat_id, message_id):
+    def delete_msg():
+        try:
+            # Bot ki apni async loop me message delete karne ke liye run_coroutine_threadsafe use hota hai
+            import asyncio
+            async def do_delete():
+                try:
+                    await context.bot.delete_message(chat_id=chat_id, message_id=message_id)
+                except Exception:
+                    pass
+            
+            # Application loop me task daalna
+            loop = context.application.create_task(do_delete())
+        except Exception:
+            pass
+
+    # 5 minutes = 300 seconds
+    timer = threading.Timer(300.0, delete_msg)
+    timer.daemon = True
+    timer.start()
+
+# ==========================================
+# 5. CORE MESSAGE HANDLER
 # ==========================================
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
@@ -128,7 +152,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         matched_rule = get_matched_rule(lower_text)
 
-        # Ignore un-tagged channel forwards and random chatter
         if is_forwarded and not is_tagged and not matched_rule:
             return
 
@@ -136,7 +159,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
     # ==========================================
-    # 🔑 RESPONSE GENERATION (AESTHETIC & PROFESSIONAL)
+    # 🔑 RESPONSE GENERATION
     # ==========================================
     matched_rule = get_matched_rule(lower_text)
 
@@ -147,5 +170,63 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_text = f"✨ Yes {user_tag}! SabKraftTech support is active. Let me know what material or app you need assistance with."
     else:
         base_reply = matched_rule.get("reply", "")
-        reply_text = base_reply.replace("{user_tag}",
-        
+        reply_text = base_reply.replace("{user_tag}", user_tag)
+
+    # ==========================================
+    # 🔘 BUTTON LOGIC: ONLY WHEN TAGGED
+    # ==========================================
+    markup = None
+    is_explicitly_tagged = (bot_username and f"@{bot_username}".lower() in lower_text) or (
+        update.message.reply_to_message
+        and update.message.reply_to_message.from_user
+        and update.message.reply_to_message.from_user.id == context.bot.id
+    )
+
+    if not is_group_or_channel or is_explicitly_tagged:
+        apk_keywords = ["apk", "capcut", "alight motion", "kinemaster", "vn", "pixellab", "picsart", "download", "mod", "premium", "apps", "modes"]
+        material_keywords = ["material", "materials", "overlay", "transition", "preset", "png", "bgm", "sfx", "font", "bundle", "package"]
+        official_keywords = ["sabkraft", "sabkrafttech", "admin", "malik", "owner", "creator", "youtube", "instagram"]
+
+        is_apk_query = any(kw in lower_text for kw in apk_keywords)
+        is_material_query = any(kw in lower_text for kw in material_keywords)
+        show_official = any(kw in lower_text for kw in official_keywords)
+
+        if is_apk_query or is_material_query:
+            markup = MATERIAL_BUTTONS
+        elif show_official or matched_rule:
+            markup = OFFICIAL_BUTTONS
+
+    # Send Response
+    try:
+        sent_message = await update.message.reply_text(reply_text, reply_markup=markup, parse_mode="Markdown")
+    except Exception:
+        try:
+            sent_message = await update.message.reply_text(reply_text, reply_markup=markup)
+        except Exception:
+            sent_message = None
+
+    # ⏱️ Agar message group ya supergroup me bheja gaya hai, toh 5 minute baad automatic delete karne ka timer lagayein
+    if sent_message and is_group_or_channel:
+        schedule_message_deletion(context, update.message.chat_id, sent_message.message_id)
+
+# ==========================================
+# 6. APP STARTUP
+# ==========================================
+def main():
+    threading.Thread(target=run_flask, daemon=True).start()
+
+    if not TELEGRAM_TOKEN:
+        logging.error("❌ TELEGRAM_TOKEN environment variable missing!")
+        return
+
+    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+    application.add_handler(
+        MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
+    )
+
+    logging.info("🚀 SabKraftTech Auto-Delete Bot Starting Successfully...")
+    application.run_polling(drop_pending_updates=True)
+
+if __name__ == "__main__":
+    main()
+    
