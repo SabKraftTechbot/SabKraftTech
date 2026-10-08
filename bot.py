@@ -24,14 +24,14 @@ app = Flask(__name__)
 
 @app.route("/")
 def health():
-    return "SabKraftTech Smart Tag-Filter Bot Online!", 200
+    return "SabKraftTech Core Focus Bot Online!", 200
 
 def run_flask():
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port, use_reloader=False)
 
 # ==========================================
-# 2. BOT CONFIG & BUTTONS
+# 2. BOT CONFIG & OFFICIAL BUTTONS
 # ==========================================
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 
@@ -84,18 +84,19 @@ def extract_user_tag(update: Update) -> str:
     return f"[{user.first_name}](tg://user?id={user.id})"
 
 # ==========================================
-# 4. CORE MESSAGE HANDLER WITH SMART TAG FILTER
+# 4. CORE MESSAGE HANDLER (FINAL LOGIC)
 # ==========================================
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
 
-    chat_type = update.message.chat.type
+    chat = update.message.chat
+    chat_type = chat.type
     user_tag = extract_user_tag(update)
-    is_group = chat_type in ["group", "supergroup"]
+    is_group_or_channel = chat_type in ["group", "supergroup", "channel"]
     bot_username = context.bot.username or ""
 
-    # Agar message me text ya caption hi nahi hai, toh ignore karein
+    # Agar message me text ya caption hi nahi hai (jaise sirf photo/video bina text ke), toh ignore karo
     user_text = update.message.text or update.message.caption or ""
     if not user_text.strip():
         return
@@ -103,40 +104,60 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text_clean = user_text.strip()
     lower_text = user_text_clean.lower()
 
-    # Group Link Blocker
-    if is_group and user_text_clean:
+    # Group/Channel me link blocker (agar koi unauthorized link bhejta hai)
+    if is_group_or_channel and user_text_clean:
         if re.search(r"http[s]?://|t\.me/|telegram\.me/", user_text_clean):
-            try:
-                await update.message.delete()
-                return
-            except Exception:
-                pass
+            # Agar message me official channel link khud ka hai toh allow karein, warna block/delete
+            if "t.me/sabkrafttech" not in lower_text and "t.me/teamsabkrafttech" not in lower_text:
+                try:
+                    if chat_type in ["group", "supergroup"]:
+                        await update.message.delete()
+                        return
+                except Exception:
+                    pass
 
     # ==========================================
-    # 🎯 GROUP VS DIRECT CHAT LOGIC
+    # 🎯 SMART FILTER & SPAM PREVENTION LOGIC
     # ==========================================
-    if is_group:
-        # Check karein ki kya user ne bot ko tag kiya hai ya bot ke message par reply kiya hai
+    if is_group_or_channel:
+        # 1. Agar message channel se forward hoke aaya hai, aur usme koi tag nahi hai, toh bot chup rahega!
+        is_forwarded = bool(update.message.forward_origin or update.message.forward_from_chat or update.message.forward_from)
+        
+        # 2. Check karo ki kya bot ko tag kiya gaya hai ya bot ke message par reply hai?
         is_tagged = (bot_username and f"@{bot_username}".lower() in lower_text) or (
             update.message.reply_to_message
             and update.message.reply_to_message.from_user
             and update.message.reply_to_message.from_user.id == context.bot.id
         )
-        
-        # Agar group me hai AUR tag/reply nahi kiya, toh bot chup rahega (channel forward ya random chat ignore)
-        if not is_tagged:
+
+        # 3. Check karo ki kya message me koi valid trigger keyword (filters.json wala) maujood hai?
+        matched_rule = get_matched_rule(lower_text)
+
+        # 🚀 MAIN CONDITION:
+        # Agar message forwarded hai AUR na toh bot ko tag kiya gaya hai, na hi koi trigger keyword match hua hai -> TAB BOT BILKUL RESPOND NAHI KAREGA.
+        if is_forwarded and not is_tagged and not matched_rule:
             return
 
-    # Check rule from filters.json
+        # Agar normal group chat hai aur na toh tag kiya, na keyword match hua, toh bhi ignore (spam bachane ke liye)
+        if not is_tagged and not matched_rule:
+            return
+
+    # ==========================================
+    # 🔑 RULE MATCHING & RESPONSE GENERATION
+    # ==========================================
     matched_rule = get_matched_rule(lower_text)
+
     if not matched_rule:
-        # Agar keyword match nahi hua aur group me tag kiya tha ya DM me hai, toh ek generic smart reply dega
-        reply_text = f"✨ Hey {user_tag}! SabKraftTech AI haazir hai. Video editing, apps ya YouTube guidelines ke baare me poochhein! 🚀"
+        # Agar tag kiya tha par koi specific keyword nahi mila, toh SabKraftTech core focus wala professional reply do
+        if not is_group_or_channel:
+            reply_text = f"✨ Hey {user_tag}! SabKraftTech AI haazir hai. Premium Apps (CapCut/Alight Motion), Editing Materials, ya YouTube/Social Media tips ke liye batayein! 🚀"
+        else:
+            reply_text = f"✨ Yes {user_tag}! SabKraftTech hub me batayein—CapCut/Alight Motion APK chahiye ya Editing Materials? 🎬🔥"
     else:
         base_reply = matched_rule.get("reply", "")
         reply_text = base_reply.replace("{user_tag}", user_tag)
 
-    # Button triggers check
+    # Core Focus Buttons Logic (APKs & Materials & Official Links)
     apk_keywords = ["apk", "capcut", "alight motion", "kinemaster", "vn", "pixellab", "picsart", "download", "mod", "premium", "apps", "modes"]
     material_keywords = ["material", "materials", "overlay", "transition", "preset", "png", "bgm", "sfx", "font", "bundle", "package"]
     official_keywords = ["sabkraft", "sabkrafttech", "admin", "malik", "owner", "creator", "youtube", "instagram"]
@@ -148,7 +169,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     markup = None
     if is_apk_query or is_material_query:
         markup = MATERIAL_BUTTONS
-    elif show_official:
+    elif show_official or matched_rule:
         markup = OFFICIAL_BUTTONS
 
     # Send Response
@@ -175,7 +196,7 @@ def main():
         MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
     )
 
-    logging.info("🚀 SabKraftTech Smart Tag-Filter Bot Starting...")
+    logging.info("🚀 SabKraftTech Core Focus Bot Starting Successfully...")
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
