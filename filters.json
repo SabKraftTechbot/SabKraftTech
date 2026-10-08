@@ -1,3 +1,4 @@
+
 {
   "button_triggers": [
     "sabkraft",
@@ -547,6 +548,6 @@
         "rate"
       ],
       "reply": "Hey {user_tag}! 💼 **Student/Freelancer Tip**: Apna 3-best videos ka Portfolio drive link banao aur direct creators ko Instagram/Email par cold message karo!"
-    },
-    {
-      "category": "Po
+    }
+  ]
+}
