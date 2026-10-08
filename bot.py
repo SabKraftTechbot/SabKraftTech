@@ -13,6 +13,56 @@ from telegram.ext import (
     filters,
 )
 
+# ==========================================
+# 1. LOGGING & FLASK SERVER (KEEP-ALIVE)
+# ==========================================
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
+)
+
+app = Flask(__name__)
+
+@app.route("/")
+def health():
+    return "SabKraftTech Dynamic AI Engine is Active!", 200
+
+def run_flask():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port, use_reloader=False)
+
+# ==========================================
+# 2. CONFIG & AI SETUP
+# ==========================================
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+GEMBilkul! Yeh ekdum next-level idea hai. Ek hi fixed reply baar-baar bhejne se bot boring (robotic) lagne lagta hai. 
+
+Is problem ko solve karne ke liye maine **`bot.py` me ek "Dynamic AI Router"** banaya hai. Ab bot kya karega:
+1. Sabse pehle `filters.json` me keyword match karega (taaki context pata chale ki user kya chahta hai).
+2. Fir us category ka context aur user ka exact message **Gemini AI** ko bhejega.
+3. Gemini us context ko samajh kar **har baar ek naya, fresh, aur aesthetic response** banayega!
+4. **Hate Speech & Politics** ko strictly "Static" rakha gaya hai taaki wahan AI koi galti na kare aur direct warning de.
+
+Yahan aapka **Ultimate `bot.py`** code hai jo is dynamic behavior ko handle karega:
+
+### 🐍 The Advanced Context-Aware `bot.py`
+
+```python
+import json
+import os
+import re
+import threading
+import logging
+from flask import Flask
+import google.generativeai as genai
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import (
+    ApplicationBuilder,
+    ContextTypes,
+    MessageHandler,
+    filters,
+)
+
 # Logging Setup
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -38,42 +88,35 @@ def run_flask():
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 
-# Official Social Buttons
 OFFICIAL_BUTTONS = InlineKeyboardMarkup([
     [
-        InlineKeyboardButton("📢 Telegram Channel", url="https://t.me/SabKraftTech"),
-        InlineKeyboardButton("👥 Telegram Group", url="https://t.me/TeamSabKraftTech")
+        InlineKeyboardButton("📢 Telegram Channel", url="[https://t.me/SabKraftTech](https://t.me/SabKraftTech)"),
+        InlineKeyboardButton("👥 Telegram Group", url="[https://t.me/TeamSabKraftTech](https://t.me/TeamSabKraftTech)")
     ],
     [
-        InlineKeyboardButton("▶️ YouTube Channel", url="https://youtube.com/@sabkrafttech?si=BvFSMTysyXScxEj2"),
-        InlineKeyboardButton("📸 Instagram ID", url="https://instagram.com/sabkrafttech")
+        InlineKeyboardButton("▶️ YouTube Channel", url="[https://youtube.com/@sabkrafttech?si=BvFSMTysyXScxEj2](https://youtube.com/@sabkrafttech?si=BvFSMTysyXScxEj2)"),
+        InlineKeyboardButton("📸 Instagram ID", url="[https://instagram.com/sabkrafttech](https://instagram.com/sabkrafttech)")
     ]
 ])
 
-# Editing Material Buttons
 MATERIAL_BUTTONS = InlineKeyboardMarkup([
-    [
-        InlineKeyboardButton("📦 Download Overlays & Effects", url="https://t.me/SabKraftTech")
-    ],
-    [
-        InlineKeyboardButton("🎨 Download Presets, PNGs & Fonts", url="https://t.me/SabKraftTech")
-    ],
-    [
-        InlineKeyboardButton("🎵 Download BGM & SFX Packs", url="https://t.me/SabKraftTech")
-    ]
+    [InlineKeyboardButton("📦 Download Overlays & Effects", url="[https://t.me/SabKraftTech](https://t.me/SabKraftTech)")],
+    [InlineKeyboardButton("🎨 Download Presets, PNGs & Fonts", url="[https://t.me/SabKraftTech](https://t.me/SabKraftTech)")],
+    [InlineKeyboardButton("🎵 Download BGM & SFX Packs", url="[https://t.me/SabKraftTech](https://t.me/SabKraftTech)")]
 ])
 
 # ==========================================
-# 3. ADVANCED CULTURAL & CONTEXTUAL AI ENGINE
+# 3. ADVANCED AI SYSTEM PERSONA
 # ==========================================
 SYSTEM_PERSONA = (
-    "You are SabKraftTech AI — an elite, highly intelligent, premium, and aesthetic Gen-Z assistant "
-    "for Video Editors, Graphic Designers, YouTubers, Freelancers, and Creators.\n"
+    "You are SabKraftTech AI — an elite, premium, Gen-Z assistant created for the SabKraft Tech platform. "
+    "You assist Video Editors, Graphic Designers, YouTubers, and Creators.\n"
     "CRITICAL RULES:\n"
-    "1. **Cultural & Respectful Greetings:** Match the user's greeting naturally and respectfully. If they greet with Islamic adab (e.g., 'Assalamu Alaikum', 'Jumma Mubarak'), reply warmly with Islamic grace (e.g., 'Walaikum Assalam wa Rahmatullahi wa Barakatuh', 🌙✨). If they greet with Hindu or other cultural respect (e.g., 'Namaste', 'Jai Shri Ram'), reply with equal warmth and positivity (🙏✨).\n"
-    "2. **Unique & Contextual:** Read the query deeply. Never repeat the same response twice. Keep it short (2-3 lines max), professional, to-the-point, and styled with high-end aesthetic emojis.\n"
-    "3. **Language Matching:** Match the user's exact language (English, Hindi, Roman Urdu/Hinglish) seamlessly.\n"
-    "4. Always address or tag the user cleanly."
+    "1. Keep responses ultra-aesthetic, professional, respectful, and concise (2-3 lines max).\n"
+    "2. Use high-end emojis (✨, 🚀, 💎, 🔥, 🎬).\n"
+    "3. Match the user's language smoothly (English, Hindi, Roman Urdu/Hinglish).\n"
+    "4. Always greet or tag the user cleanly using their provided tag.\n"
+    "5. Do NOT sound robotic. Be a natural, motivating, and helpful thought-partner."
 )
 
 def get_ai_model():
@@ -98,7 +141,7 @@ def extract_user_tag(update: Update) -> str:
     return f"[{user.first_name}](tg://user?id={user.id})"
 
 # ==========================================
-# 4. JSON CONFIG & BRAND OVERRIDES
+# 4. JSON FILTER READER (RETURNS FULL RULE)
 # ==========================================
 def load_json_config():
     if os.path.exists("filters.json"):
@@ -109,26 +152,24 @@ def load_json_config():
             logging.error(f"JSON Load Error: {e}")
     return {"button_triggers": [], "custom_rules": []}
 
-def get_brand_reply(lower_text: str, user_tag: str) -> str:
+def get_matched_rule(lower_text: str):
+    """Returns the matched rule dictionary instead of just the string."""
     config = load_json_config()
     rules = config.get("custom_rules", [])
-    user_words = set(lower_text.split())
     
     for rule in rules:
         keywords = rule.get("keywords", [])
         for kw in keywords:
-            kw_lower = kw.lower().strip()
-            if kw_lower == lower_text or kw_lower in user_words or kw_lower in lower_text:
-                reply = rule.get("reply", "")
-                return reply.replace("{user_tag}", user_tag)
-    return ""
+            if kw.lower().strip() in lower_text:
+                return rule
+    return None
 
 def is_only_emoji(text: str) -> bool:
     emoji_pattern = re.compile(r"^[\s\U00010000-\U0010ffff\u2600-\u26ff\u2700-\u27bf]+$")
     return bool(emoji_pattern.match(text))
 
 # ==========================================
-# 5. MAIN MESSAGE HANDLER (Safe & Robust)
+# 5. MAIN MESSAGE HANDLER
 # ==========================================
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
@@ -162,82 +203,91 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not is_tagged:
             return
 
-    # 3. Dynamic Keyword Classification (Group vs Channel/Material context)
-    apk_keywords = ["apk", "capcut", "alight motion", "kinemaster", "vn", "pixellab", "picsart", "app", "download mod"]
-    material_keywords = ["material", "materials", "overlay", "transition", "preset", "png", "bgm", "sfx", "font", "bundle", "package", "tmkoc", "cid", "meme"]
+    # Button Triggers Check
+    apk_keywords = ["apk", "capcut", "alight motion", "kinemaster", "vn", "pixellab", "picsart", "download", "mod"]
+    material_keywords = ["material", "materials", "overlay", "transition", "preset", "png", "bgm", "sfx", "font", "bundle"]
+    official_keywords = ["sabkraft", "sabkrafttech", "admin", "malik", "owner", "creator", "youtube", "instagram"]
 
     is_apk_query = any(kw in lower_text for kw in apk_keywords)
     is_material_query = any(kw in lower_text for kw in material_keywords)
-    official_keywords = ["sabkraft", "sabkrafttech", "admin", "malik", "owner"]
     show_official = any(kw in lower_text for kw in official_keywords)
 
     reply_text = ""
+    model = ai_model or get_ai_model()
 
-    # Step A: Check Brand Override
-    brand_reply = get_brand_reply(lower_text, user_tag)
-    if brand_reply and ("sabkraft" in lower_text):
-        reply_text = brand_reply
+    # Step A: Check Custom Filters First
+    matched_rule = get_matched_rule(lower_text)
 
-    # Step B: Emoji or Sticker Response
+    if matched_rule:
+        category = matched_rule.get("category", "")
+        base_reply = matched_rule.get("reply", "")
+
+        # Strict Static Reply for Warnings (No AI alteration allowed)
+        if "Hate Speech" in category or "WARNING" in category:
+            reply_text = base_reply.replace("{user_tag}", user_tag)
+        else:
+            # Dynamic AI Generation based on Filter Context
+            if model:
+                try:
+                    dynamic_prompt = (
+                        f"{SYSTEM_PERSONA}\n\n"
+                        f"User Tag: {user_tag}\n"
+                        f"User Exact Message: \"{user_text_clean}\"\n\n"
+                        f"Context/Category Match: {category}\n"
+                        f"Core Vibe/Instruction: {base_reply}\n\n"
+                        f"Task: Do not just copy the instruction. Write a COMPLETELY FRESH, unique, and dynamic 2-3 line response "
+                        f"that directly answers the user's message while maintaining the '{category}' vibe. "
+                        f"Keep it extremely aesthetic."
+                    )
+                    res = model.generate_content(dynamic_prompt)
+                    reply_text = res.text if (res and hasattr(res, 'text') and res.text) else base_reply.replace("{user_tag}", user_tag)
+                except Exception as e:
+                    logging.error(f"Dynamic Gemini Error: {e}")
+                    reply_text = base_reply.replace("{user_tag}", user_tag)
+            else:
+                # Fallback if Gemini is down
+                reply_text = base_reply.replace("{user_tag}", user_tag)
+
+    # Step B: Emoji / Sticker
     elif is_only_emoji(user_text_clean) or update.message.sticker:
         reply_text = f"✨ Hey {user_tag}! 🔥 Great vibe! Aaj editing ya creative project me kya chal raha hai? 🎬"
 
-    # Step C: Location & Context Aware Routing (Group vs Channel Search)
-    elif is_apk_query or is_material_query:
-        if is_group:
-            if is_apk_query:
-                reply_text = f"📱 **Group App Search**: Hey {user_tag}! Pro APKs aur latest updates ke liye hamare main channel files ko explore karein ya neeche diye buttons ka use karein! ⚡"
-            else:
-                reply_text = f"📦 **Group Material Hub**: Hey {user_tag}! Editing materials aur presets group me explore karne ke liye pinned messages ya channel links check karein! 🎨"
-        else:
-            if is_apk_query:
-                reply_text = f"🚀 **Pro APK Hub**: Hey {user_tag}! Aapko unblocked pro apps chahiye? Channel ke downloads section ya button se direct access lein! 🔥"
-            else:
-                reply_text = f"✨ **Channel Material Exploration**: Hey {user_tag}! Premium overlays, transitions aur SFX packs load ho chuke hain. Neeche buttons se download karein! 💎"
-
-    # Step D: Screenshot Vision AI Scan
+    # Step C: Screenshot Vision Scan
     elif update.message.photo:
         try:
             photo_file = await update.message.photo[-1].get_file()
             photo_bytes = await photo_file.download_as_bytearray()
             image_part = {"mime_type": "image/jpeg", "data": bytes(photo_bytes)}
 
-            query_prompt = user_text_clean if user_text_clean else "Error Screenshot"
-            full_prompt = f"{SYSTEM_PERSONA}\n\nUser Tag: {user_tag}\nQuery/Error: {query_prompt}\nAnalyze this image/error contextually and give a crisp, aesthetic 2-step fix."
+            query_prompt = user_text_clean if user_text_clean else "Analyze this screenshot contextually."
+            full_prompt = f"{SYSTEM_PERSONA}\n\nUser Tag: {user_tag}\nQuery: {query_prompt}\nGive a crisp, 2-step solution or observation regarding this image."
 
-            model = ai_model or get_ai_model()
             if model:
                 res = model.generate_content([full_prompt, image_part])
-                if res and hasattr(res, 'text') and res.text:
-                    reply_text = res.text
-                else:
-                    reply_text = f"✨ Hey {user_tag}! Image processed successfully. App name mention karein! ⚡"
+                reply_text = res.text if (res and hasattr(res, 'text')) else f"✨ Hey {user_tag}! Image processed. Details share karein! ⚡"
             else:
                 reply_text = f"✨ Hey {user_tag}! AI engine offline hai. ⚠️"
         except Exception as e:
             logging.error(f"Vision Error: {e}")
-            reply_text = f"✨ Hey {user_tag}! Image analysis complete, details share karein! 🛠️"
+            reply_text = f"✨ Hey {user_tag}! Image analysis done, apni dikkat likh kar batayein! 🛠️"
 
-    # Step E: Fully Dynamic Contextual AI with Safe Response Extraction
+    # Step D: Unfiltered Dynamic Chat (Standard AI)
     elif user_text_clean:
         try:
-            model = ai_model or get_ai_model()
             if model:
-                full_prompt = f"{SYSTEM_PERSONA}\n\nUser Tag: {user_tag}\nUser Message: {user_text_clean}\nContext: Craft a completely fresh, unique, respectful (applying proper cultural/religious greetings if triggered), and aesthetic response tailored directly to this input."
+                full_prompt = (
+                    f"{SYSTEM_PERSONA}\n\nUser Tag: {user_tag}\nUser Message: {user_text_clean}\n"
+                    "Craft a fresh, unique, aesthetic response strictly tailored to this input."
+                )
                 res = model.generate_content(full_prompt)
-                
-                # Safe text extraction to prevent any crashes
-                if res and hasattr(res, 'text') and res.text:
-                    reply_text = res.text
-                else:
-                    reply_text = f"✨ Hey {user_tag}! Aaj ka session amazing rahega, apni next query poochhein! 🚀"
+                reply_text = res.text if (res and hasattr(res, 'text')) else f"✨ Hey {user_tag}! Amazing, ispar aur detail me batayein! 🚀"
             else:
-                reply_text = f"✨ Hey {user_tag}! AI engine configuration check karein. ⚠️"
+                reply_text = f"✨ Hey {user_tag}! AI backend error. ⚠️"
         except Exception as e:
             logging.error(f"Gemini API Execution Error: {e}")
-            reply_text = f"✨ Hey {user_tag}! Bilkul badhiya sawal hai! Ispar aur detail me bataiye taaki aur behtar guide kar sakuin! 💡"
+            reply_text = f"✨ Hey {user_tag}! Sahi sawal hai! Thoda aur detail dejiye taaki exact solution de saku. 💡"
 
-    # Step F: Send Final Reply with Interactive Buttons
+    # Step E: Send Reply with Buttons (If required)
     if reply_text:
         markup = None
         if show_official or is_apk_query:
@@ -272,9 +322,8 @@ def main():
         MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
     )
 
-    logging.info("🚀 SabKraftTech Bot active and polling (drop_pending_updates=True)...")
+    logging.info("🚀 SabKraftTech Bot active with Dynamic AI Mode...")
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
-    
