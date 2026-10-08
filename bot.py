@@ -28,7 +28,7 @@ except Exception as e:
     ai_model = None
 
 # ==========================================
-# 2. LOGGING & FLASK HEALTH CHECK (24/7 ONLINE)
+# 2. LOGGING & FLASK HEALTH CHECK
 # ==========================================
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -39,7 +39,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def health():
-    return "SabKraftTech Ultimate AI Engine Running 24/7!", 200
+    return "SabKraftTech Pro Editor AI Engine Online 24/7!", 200
 
 def run_flask():
     port = int(os.environ.get("PORT", 8080))
@@ -79,7 +79,7 @@ def load_filters():
                 _cached_filters = data.get("filters", [])
                 return _cached_filters
         except Exception as e:
-            logging.error(f"Error reading filters.json (using fallback cache): {e}")
+            logging.error(f"Error reading filters.json: {e}")
             return _cached_filters
     return []
 
@@ -110,32 +110,32 @@ def extract_user_tag(msg) -> str:
     return f"[{user.first_name}](tg://user?id={user.id})"
 
 # ==========================================
-# 5. REPLIT-STYLE DYNAMIC AI GENERATOR
+# 5. CREATOR & EDITOR PERSONA GEMINI AI
 # ==========================================
 async def get_ai_response(user_text: str, user_name: str) -> str:
     if not ai_model:
-        return f"✨ Hey {user_name}! SabKraftTech Community me aapka swagat hai. Main aapki kya help kar sakta hoon?"
+        return f"✨ **Hey {user_name}!** SabKraftTech Editor Community me aapka swagat hai. Aaj konse project ya asset me help chahiye?"
 
     system_prompt = f"""
-    You are SabKraftTech AI, an ultra-smart, aesthetic, emotionally connective assistant for SabKraftTech channel & community group (Founder: Sabit Ansari).
-    
-    GUIDELINES FOR RESPONSE:
-    1. USER CONTEXT: The member asking is '{user_name}'.
-    2. LANGUAGE & SENTIMENT: Match user's exact language (Hinglish/Urdu/Hindi/English) and emotional tone deeply. Respect religious greetings and context.
-    3. TONE & STYLE: Short, premium, aesthetic, highly supportive, direct, formatted with clean bullet points or bold text.
-    4. MEMBER DEMANDS: Guide them on editing assets, Pro APKs, High-CTR Thumbnails, or Youtube Growth strategies based on what they asked.
-    5. NATURAL & HUMAN: Make every reply feel like a real human assistant, unique and non-robotic.
-    
+    You are 'SabKraftTech AI' — an expert Mobile Video Editor, Graphic Designer, Cinematic Documentary Creator, and Freelancer assistant for the SabKraftTech community (Founder: Sabit Ansari).
+
+    CORE PERSONALITY & BEHAVIOR RULES:
+    1. CONTEXT: The member speaking is '{user_name}'.
+    2. VOICE & TONE: Speak like a real, experienced Video Editor & Freelance Creator. Be warm, supportive, friendly, highly practical, and knowledgeable about YouTube growth, CTR, CapCut, KineMaster, Alight Motion, Photoshop, and mobile editing tools.
+    3. GREETINGS (Hi, Hlo, Good Morning, Good Night, Good Day, etc.): Respond warmly as a fellow creator! Wish them well, boost their creative energy, and casually ask what editing project or asset they are working on today.
+    4. LANGUAGE: Match the user's language smoothly (Hinglish/Hindi/Urdu/English). Keep religious & respectful greetings authentic.
+    5. STYLE: Clean Markdown, short & engaging (2-3 brief lines or clean bullet points). Avoid long boring lectures.
+
     Member Message: "{user_text}"
-    Respond in 2-3 short aesthetic bullet points or paragraphs:
+    Give a natural, aesthetic reply as a Pro Video Editor:
     """
-    
+
     try:
         response = await asyncio.to_thread(ai_model.generate_content, system_prompt)
         return response.text.strip()
     except Exception as e:
         logging.error(f"Gemini AI Error: {e}")
-        return f"✨ **Hey {user_name}!**\n\nSabKraftTech group me aapka swagat hai. Batayein aaj kis editing asset ya query me aapko support chahiye?"
+        return f"✨ **Hey {user_name}!**\n\nKaise hain aap? Aaj editing, graphic design, ya YouTube content ke silsile me kya update hai?"
 
 # ==========================================
 # 6. AUTO-DELETE HELPER (300 SECONDS)
@@ -163,7 +163,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if msg.is_automatic_forward or getattr(msg, "forward_origin", None) or getattr(msg, "forward_from_chat", None):
         return
 
-    # 🛑 2. IGNORE POSTS SENT AS CHANNEL / SENDER CHAT
+    # 🛑 2. IGNORE SENDER CHAT / POSTS SENT AS CHANNEL
     if msg.sender_chat and msg.sender_chat.id != chat.id:
         return
 
@@ -180,7 +180,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_tag = extract_user_tag(msg)
     user_name = msg.from_user.first_name if msg.from_user else "Creator"
 
-    # 🛡️ 4. LINK BLOCKER FOR GROUPS (EXCEPT SABKRAFTTECH LINKS)
+    # 🛡️ 4. LINK BLOCKER FOR GROUPS
     if is_group and re.search(r"http[s]?://|t\.me/|telegram\.me/", user_text_clean):
         if "t.me/sabkrafttech" not in lower_text and "t.me/teamsabkrafttech" not in lower_text:
             try:
@@ -189,7 +189,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception:
                 pass
 
-    # 🟢 5. RESPONSE GENERATION FOR REAL MEMBERS
+    # 🟢 5. ALWAYS REPLY TO REAL MEMBERS IN GROUP & DM
     matched_filter = find_matching_filter(lower_text)
     reply_text = ""
     markup = None
@@ -206,7 +206,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             markup = None
     else:
-        # Direct Query / Un-matched Question -> Gemini AI Response
+        # Greetings / General Chat / Queries -> Pro Video Editor Gemini AI
         reply_text = await get_ai_response(user_text_clean, user_name)
         markup = None
 
@@ -242,9 +242,8 @@ def main():
         MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
     )
 
-    logging.info("🚀 SabKraftTech Permanent AI Bot Running...")
+    logging.info("🚀 SabKraftTech Editor AI Bot Running...")
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
-    
