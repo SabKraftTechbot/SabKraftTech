@@ -1,4 +1,3 @@
-
 {
   "button_triggers": [
     "sabkraft",
@@ -22,6 +21,9 @@
     "sfx",
     "font",
     "apk",
+    "apps",
+    "mod",
+    "modes",
     "download",
     "earning",
     "meme",
@@ -42,6 +44,20 @@
       "reply": "✨ **SABKRAFTTECH OFFICIAL**\n\nHey {user_tag}! Yeh aapka apna creator hub hai. Video editing tools, presets, ya YouTube growth se related kya chahiye batayein! 🚀"
     },
     {
+      "category": "Short Casual Greetings (Hi/Hello)",
+      "keywords": [
+        "hi",
+        "hii",
+        "hlo",
+        "hlw",
+        "hello",
+        "hey",
+        "hy",
+        "hyy"
+      ],
+      "reply": "✨ Welcome to SabKraftTech {user_tag}! 👋 Aaj batayein, video editing karni hai, graphics design, ya premium APK chahiye? 🚀"
+    },
+    {
       "category": "Refined Islamic Greetings",
       "keywords": [
         "aslm",
@@ -49,6 +65,7 @@
         "assalamu",
         "assalamu alaikum",
         "assalam o alaikum",
+        "assalamualaikum",
         "walekum",
         "walekum assalam",
         "ramzan",
@@ -56,7 +73,7 @@
         "jumma",
         "jumma mubarak"
       ],
-      "reply": "Walaikum Assalam {user_tag}! 🌙 Mubarakbaad! Aaj video editing, graphic design ya YouTube content me kya help chahiye?"
+      "reply": "Walaikum Assalam {user_tag}! 🌙 Mubarakbaad! Aaj video editing, graphic design ya YouTube content me kya help chahiye? 🤲"
     },
     {
       "category": "Islamic Reverence & Sahaba Respect",
@@ -73,6 +90,17 @@
         "prophet"
       ],
       "reply": "✨ **RESPECT & FAITH**\n\nHey {user_tag}! Allah Paak, Pyare Nabi Muhammad ﷺ aur Sahaba Karam (Hz. Abu Bakr, Hz. Umar, Hz. Uthman, Hz. Ali) ki taleemat se humein sabr, mehnat aur achhe akhlaq ki sikh milti hai. Apne kaam aur akhlaq se sabka dil jeetein! 🤲"
+    },
+    {
+      "category": "Islamic Expressions & Praise",
+      "keywords": [
+        "inshaallah",
+        "mashallah",
+        "subhanallah",
+        "alhamdulillah",
+        "bismillah"
+      ],
+      "reply": "✨ Mashallah {user_tag}! Allah aapke har nek maqsad aur mehnat me aisi hi barkat de. Apna hard work aise hi continue rakhein! 🤲❤️"
     },
     {
       "category": "Hindu Greetings",
@@ -137,13 +165,68 @@
         "kya chal raha hai",
         "kya ho raha hai",
         "kya kar rahe ho",
-        "hello",
-        "helo",
-        "hey bot",
         "whats up",
         "kya hl"
       ],
       "reply": "Hey {user_tag}! 👋 Sab ekdum badhiya aur set hai! Aap batao, aaj kya scene hai? Kaunse project ya video par kaam chal raha hai? ✨🔥"
+    },
+    {
+      "category": "Farewells & Good Byes",
+      "keywords": [
+        "good bye",
+        "bye",
+        "by",
+        "alvida",
+        "good day",
+        "have a nice day",
+        "cya",
+        "see you"
+      ],
+      "reply": "👋 Bye {user_tag}! Have a great day ahead! Apna kaam save kar lena, aur kal nayi creative energy ke sath wapas aana! ✨"
+    },
+    {
+      "category": "Help & Support Requests",
+      "keywords": [
+        "help",
+        "madad",
+        "help me",
+        "please help",
+        "support chahiye",
+        "bhai help"
+      ],
+      "reply": "🤝 **HELP & SUPPORT**\n\nHey {user_tag}! SabKraftTech AI haazir hai. Apni problem detail me likhein—Editing me dikkat hai ya koi App download karna hai? 💡"
+    },
+    {
+      "category": "App Errors, Bugs & Server Issues",
+      "keywords": [
+        "not working",
+        "not available",
+        "error",
+        "kmm nhi kr rha hai",
+        "kaam nahi kar raha",
+        "glitch",
+        "server down",
+        "crash",
+        "problem",
+        "issue",
+        "open nahi ho raha"
+      ],
+      "reply": "⚠️ **SYSTEM / APP ISSUE**\n\nHey {user_tag}! Agar koi App ya link kaam nahi kar raha hai, toh ghabrayein nahi. Thodi der baad try karein ya humara Telegram channel check karein! 🛠️"
+    },
+    {
+      "category": "Praise, Motivation & Vibes",
+      "keywords": [
+        "amazing",
+        "wow",
+        "awesome",
+        "great",
+        "badhiya",
+        "mast",
+        "ek number",
+        "op",
+        "khatarnak"
+      ],
+      "reply": "🔥 **AWESOME VIBES!**\n\nGlad you liked it {user_tag}! Humara mission hi aapko best premium materials aur tools provide karna hai. Keep creating masterpieces! 🚀💎"
     },
     {
       "category": "Communal Harmony & Anti-Political Hate Warning",
@@ -198,7 +281,8 @@
         "tech earning",
         "freelance earning",
         "money",
-        "paise"
+        "paise",
+        "paisa"
       ],
       "reply": "💰 **ONLINE EARNING FOR CREATORS!**\n\nHey {user_tag}! Tech & Content Creation se paise kamane ke top 4 ways:\n1. **Client Video Editing & Thumbnail Design:** Creators ko pitch karke monthly ₹15k–₹50k+ earn karein.\n2. **YouTube Tech & Editing Niche:** High RPM niche! Tutorials, App reviews aur AI tools par videos banayein.\n3. **Affiliate & Sponsorships:** Editing materials, course links aur app referral share karein.\n4. **Digital Asset Selling:** Custom PLP files, Lightroom Presets aur FX Packs sell karein!\n\nDetailed guide ke liye Telegram channel me **Earning** search karein! 🚀"
     },
@@ -229,7 +313,11 @@
         "color grading hack",
         "capcut hack",
         "pixellab hack",
-        "workflow"
+        "workflow",
+        "viral hacks",
+        "editing tips",
+        "video editing",
+        "editing"
       ],
       "reply": "⚡ **PRO EDITING & DESIGN HACKS!**\n\nHey {user_tag}! Secret Creator Hacks:\n1. **Fast Speed Ramping:** Curve graph me 3-point bounce add karke velocity smooth karein.\n2. **Cinematic Color Grading:** Shadows me Teal (+15) aur Highlights me Orange (+20) push karein.\n3. **Thumbnail Pop Effect:** Character cutout ke pichhe Radial Blur + Inner Glow shadow lagayein.\n4. **Auto Captions Hack:** CapCut AI + custom font file import se 1-click aesthetic subtitle banayein!\n\nChannel par daily short hacks active hain! 🎨🔥"
     },
@@ -352,6 +440,7 @@
       "category": "YouTube Category & Growth",
       "keywords": [
         "youtube",
+        "youtube tips",
         "ctr",
         "rpm",
         "views",
@@ -360,7 +449,8 @@
         "monetization",
         "shadowban",
         "algorithm",
-        "shorts views"
+        "shorts views",
+        "yt tips"
       ],
       "reply": "Hey {user_tag}! 📈 **YouTube Growth Formula**: High-CTR Thumbnail + First 5 Sec Hook + Proper SEO Title. Analytics check karke batayein kahan drop ho raha hai!"
     },
@@ -427,7 +517,9 @@
         "design app",
         "pixellab pro",
         "remini mod",
-        "canva pro"
+        "canva pro",
+        "graphics designing",
+        "designing"
       ],
       "reply": "🎨 **GRAPHICS DESIGN APPS**\n\nHey {user_tag}! Best Design Apps Specs:\n• **PixelLab Pro:** Custom PLP Projects, 3D Fonts & Ultra HD Render\n• **PicsArt Gold / Canva Pro:** Premium Cutout Tools, PNG Filters & AI Enhancer\n\n👉 Download all Pro APKs from our main channel!"
     },
@@ -435,9 +527,14 @@
       "category": "General Premium Mod Apps",
       "keywords": [
         "apk",
+        "apps",
+        "modes",
+        "mod",
         "unlocked apk",
         "mod apk",
-        "pro apk"
+        "pro apk",
+        "new",
+        "latest app"
       ],
       "reply": "Hey {user_tag}! 📱 **Mod Features Unlocked**: No Watermark + 4K Export + Premium Transitions/Effects Active! Telegram channel par direct APK link pinned hai. 🚀"
     },
@@ -466,88 +563,4 @@
       "reply": "🖼️ **PNGs, APNGs & OVERLAYS**\n\nHey {user_tag}! Editing Asset Pack:\n• 4K Transparent Character PNGs & Animated APNGs\n• Light Leaks, Particles & Aesthetic Backgrounds\n\n👉 Access all materials using the **Download Materials** button!"
     },
     {
-      "category": "Memes, Transitions & FX Packs / Bundles",
-      "keywords": [
-        "meme",
-        "memes",
-        "transition",
-        "transitions",
-        "effects",
-        "editing pack",
-        "bundle",
-        "package",
-        "packege",
-        "bundles",
-        "packages",
-        "luts",
-        "presets"
-      ],
-      "reply": "📦 **MEMES, TRANSITION & ASSET BUNDLES!**\n\nHey {user_tag}! Master Editing Package:\n• Trending Indian & Global Meme Clips (No Copyright)\n• Seamless Sound Effects (Whoosh, Pop, Click) & Transitions\n\n👉 Grab your bundle pack from the channel files!"
-    },
-    {
-      "category": "Thumbnail Packs & Design Elements",
-      "keywords": [
-        "thumbnail pack",
-        "thumbnail materials",
-        "graphics pack",
-        "font pack",
-        "text preset"
-      ],
-      "reply": "🎯 **YOUTUBE THUMBNAIL PACK**\n\nHey {user_tag}! CTR Boosting Assets:\n• 3D Text Presets, Glowing Arrows & Element PNGs\n• High-CTR Font Packs & Color Grids\n\n👉 Direct download available in our Telegram channel!"
-    },
-    {
-      "category": "Editing Materials & Assets General",
-      "keywords": [
-        "material",
-        "materials",
-        "backgrounds"
-      ],
-      "reply": "Hey {user_tag}! 🎨 **4K Editing Pack Loaded**: Premium Overlays, Transitions, PNGs, Presets aur APNG Assets direct Telegram channel par available hain. Niche button par click karke download karein! ⬇️"
-    },
-    {
-      "category": "Music / BGM / SFX",
-      "keywords": [
-        "bgm",
-        "sfx",
-        "no copyright music",
-        "sound effects",
-        "vlog bgm",
-        "phonk",
-        "cinematic bgm",
-        "background music",
-        "sound effect"
-      ],
-      "reply": "Hey {user_tag}! 🎵 **No-Copyright Audio Pack**: High-Energy Phonk, Cinematic BGM aur Whoosh SFX collection channel par uploaded hai! Check out karein. 🎧"
-    },
-    {
-      "category": "Graphics Designing Tips",
-      "keywords": [
-        "thumbnail",
-        "poster",
-        "banner",
-        "psd",
-        "pixelab",
-        "color grading",
-        "graphics",
-        "designing",
-        "lightroom"
-      ],
-      "reply": "Hey {user_tag}! 🎨 **Pro Design Tip**: Contrasting colors, bold clean fonts aur expressive face PNGs use karo. High CTR Guarantee! 🔥"
-    },
-    {
-      "category": "Freelancing & Student Career",
-      "keywords": [
-        "freelance",
-        "freelancing",
-        "client",
-        "clients",
-        "fiverr",
-        "upwork",
-        "portfolio",
-        "student",
-        "rate"
-      ],
-      "reply": "Hey {user_tag}! 💼 **Student/Freelancer Tip**: Apna 3-best videos ka Portfolio drive link banao aur direct creators ko Instagram/Email par cold message karo!"
-    }
-  ]
-}
+      "category": "Memes, Transitions & FX Packs
