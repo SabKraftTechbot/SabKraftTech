@@ -88,7 +88,7 @@ def get_ai_model():
             except Exception:
                 continue
     except Exception as e:
-        logging.error(f"AI Initialization Error: {e}")
+        logging.error("AI Initialization Error: %s", e)
     return None
 
 ai_model = get_ai_model()
@@ -110,7 +110,7 @@ def load_json_config():
             with open("filters.json", "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
-            logging.error(f"JSON Load Error: {e}")
+            logging.error("JSON Load Error: %s", e)
     return {"button_triggers": [], "custom_rules": []}
 
 def get_filter_reply(lower_text: str, user_tag: str) -> str:
@@ -182,7 +182,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Step B: Emoji or Sticker Response
     elif is_only_emoji(user_text_clean) or update.message.sticker:
-        reply_text = f"Hey {user_tag}! 🔥 Great vibe! Aaj kaunsa project edit kar rahe ho?"
+        reply_text = f"✨ Hey {user_tag}! 🔥 Great vibe! Aaj kaunsa project edit kar rahe ho?"
 
     # Step C: Screenshot Vision AI Scan
     elif update.message.photo:
@@ -201,7 +201,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 reply_text = f"✨ Hey {user_tag}! Screenshot mil gaya hai. Aapka exact app name batayein!"
         except Exception as e:
-            logging.error(f"Vision Processing Error: {e}")
+            logging.error("Vision Processing Error: %s", e)
             reply_text = f"✨ Hey {user_tag}! Screenshot receive ho gaya hai. Problem detail me batayein!"
 
     # Step D: General Query via Gemini AI
@@ -215,4 +215,47 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 reply_text = f"✨ Hey {user_tag}! Direct apna query type karein, main help karunga!"
         except Exception as e:
-            logging.error(f
+            logging.error("Gemini API Error: %s", e)
+            reply_text = f"✨ Hey {user_tag}! Direct apna query type karein, main help karunga!"
+
+    # Step E: Send Final Reply with Markup
+    if reply_text:
+        markup = None
+        if show_official:
+            markup = OFFICIAL_BUTTONS
+        elif show_material:
+            markup = MATERIAL_BUTTONS
+
+        try:
+            await update.message.reply_text(
+                reply_text,
+                reply_markup=markup,
+                parse_mode="Markdown"
+            )
+        except Exception:
+            try:
+                await update.message.reply_text(reply_text, reply_markup=markup)
+            except Exception:
+                pass
+
+# ==========================================
+# 6. APP LAUNCHER
+# ==========================================
+def main():
+    threading.Thread(target=run_flask, daemon=True).start()
+
+    if not TELEGRAM_TOKEN:
+        logging.error("TELEGRAM_BOT_TOKEN Environment Variable Missing!")
+        return
+
+    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+    application.add_handler(
+        MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
+    )
+
+    logging.info("🚀 SabKraftTech Bot active and polling (drop_pending_updates=True)...")
+    application.run_polling(drop_pending_updates=True)
+
+if __name__ == "__main__":
+    main()
+        
