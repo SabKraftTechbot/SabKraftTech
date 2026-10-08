@@ -25,6 +25,7 @@ try:
     else:
         ai_model = None
 except Exception as e:
+    logging.error(f"Gemini Config Error: {e}")
     ai_model = None
 
 # ==========================================
@@ -68,19 +69,15 @@ MATERIAL_BUTTONS = InlineKeyboardMarkup([
 # ==========================================
 # 4. DYNAMIC JSON FILTER READER
 # ==========================================
-_cached_filters = []
-
 def load_filters():
-    global _cached_filters
     if os.path.exists("filters.json"):
         try:
             with open("filters.json", "r", encoding="utf-8") as f:
                 data = json.load(f)
-                _cached_filters = data.get("filters", [])
-                return _cached_filters
+                return data.get("filters", [])
         except Exception as e:
             logging.error(f"Error reading filters.json: {e}")
-            return _cached_filters
+            return []
     return []
 
 def match_keyword_smart(kw: str, text: str) -> bool:
@@ -104,7 +101,7 @@ def find_matching_filter(text_lower: str):
 def extract_user_tag(msg) -> str:
     user = msg.from_user if msg else None
     if not user:
-        return "Member"
+        return "Creator"
     if user.username:
         return f"@{user.username}"
     return f"[{user.first_name}](tg://user?id={user.id})"
@@ -114,28 +111,29 @@ def extract_user_tag(msg) -> str:
 # ==========================================
 async def get_ai_response(user_text: str, user_name: str) -> str:
     if not ai_model:
-        return f"✨ **Hey {user_name}!** SabKraftTech Editor Community me aapka swagat hai. Aaj konse project ya asset me help chahiye?"
+        return f"✨ **Hey {user_name}!** SabKraftTech Editor Community me aapka swagat hai. Aaj konse project ya editing asset me support chahiye?"
 
     system_prompt = f"""
     You are 'SabKraftTech AI' — an expert Mobile Video Editor, Graphic Designer, Cinematic Documentary Creator, and Freelancer assistant for the SabKraftTech community (Founder: Sabit Ansari).
 
-    CORE PERSONALITY & BEHAVIOR RULES:
-    1. CONTEXT: The member speaking is '{user_name}'.
-    2. VOICE & TONE: Speak like a real, experienced Video Editor & Freelance Creator. Be warm, supportive, friendly, highly practical, and knowledgeable about YouTube growth, CTR, CapCut, KineMaster, Alight Motion, Photoshop, and mobile editing tools.
-    3. GREETINGS (Hi, Hlo, Good Morning, Good Night, Good Day, etc.): Respond warmly as a fellow creator! Wish them well, boost their creative energy, and casually ask what editing project or asset they are working on today.
+    CORE BEHAVIOR & PERSONALITY RULES:
+    1. USER CONTEXT: The member speaking is '{user_name}'.
+    2. VOICE & TONE: Speak like an experienced, helpful Video Editor & Freelance Creator. Be warm, friendly, practical, and knowledgeable about YouTube growth, CTR, CapCut, KineMaster, Alight Motion, Photoshop, and mobile editing tools.
+    3. GREETINGS (Hi, Hello, Hlo, Good Morning, Good Night, Good Day, etc.): Respond warmly as a fellow creator! Wish them well, boost their creative energy, and casually ask what editing project or asset they are working on today.
     4. LANGUAGE: Match the user's language smoothly (Hinglish/Hindi/Urdu/English). Keep religious & respectful greetings authentic.
-    5. STYLE: Clean Markdown, short & engaging (2-3 brief lines or clean bullet points). Avoid long boring lectures.
+    5. FORMATTING: Clean text formatting, short & engaging (2-3 brief lines or clean bullet points). Avoid long boring lectures.
 
     Member Message: "{user_text}"
     Give a natural, aesthetic reply as a Pro Video Editor:
     """
 
     try:
-        response = await asyncio.to_thread(ai_model.generate_content, system_prompt)
+        loop = asyncio.get_running_loop()
+        response = await loop.run_in_executor(None, lambda: ai_model.generate_content(system_prompt))
         return response.text.strip()
     except Exception as e:
-        logging.error(f"Gemini AI Error: {e}")
-        return f"✨ **Hey {user_name}!**\n\nKaise hain aap? Aaj editing, graphic design, ya YouTube content ke silsile me kya update hai?"
+        logging.error(f"Gemini AI Exception: {e}")
+        return f"✨ **Hey {user_name}!**\n\nSabKraftTech community me aapka swagat hai! Bataiye aaj konse editing asset ya query me help chahiye?"
 
 # ==========================================
 # 6. AUTO-DELETE HELPER (300 SECONDS)
@@ -160,7 +158,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     is_group = chat_type in ["group", "supergroup"]
 
     # 🛑 1. IGNORE CHANNEL AUTOMATIC POSTS & FORWARDS
-    if msg.is_automatic_forward or getattr(msg, "forward_origin", None) or getattr(msg, "forward_from_chat", None):
+    if getattr(msg, "is_automatic_forward", False) or getattr(msg, "forward_origin", None) or getattr(msg, "forward_from_chat", None):
         return
 
     # 🛑 2. IGNORE SENDER CHAT / POSTS SENT AS CHANNEL
@@ -189,7 +187,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception:
                 pass
 
-    # 🟢 5. ALWAYS REPLY TO REAL MEMBERS IN GROUP & DM
+    # 🟢 5. RESPONSE GENERATION FOR REAL MEMBERS
     matched_filter = find_matching_filter(lower_text)
     reply_text = ""
     markup = None
@@ -206,19 +204,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             markup = None
     else:
-        # Greetings / General Chat / Queries -> Pro Video Editor Gemini AI
+        # Greetings / Queries -> Pro Video Editor Gemini AI
         reply_text = await get_ai_response(user_text_clean, user_name)
         markup = None
 
-    # Send Reply
+    # Send Reply safely without crashing on Markdown parse errors
     sent_message = None
     try:
         sent_message = await msg.reply_text(reply_text, reply_markup=markup, parse_mode="Markdown")
-    except Exception:
+    except Exception as e:
+        logging.warning(f"Markdown failed, falling back to plain text: {e}")
         try:
             sent_message = await msg.reply_text(reply_text, reply_markup=markup)
-        except Exception:
-            pass
+        except Exception as err:
+            logging.error(f"Failed to send message: {err}")
 
     # Auto-delete in 5 mins (Groups only)
     if sent_message and is_group:
@@ -238,12 +237,13 @@ def main():
 
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     
-    application.add_handler(
-        MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
-    )
+    # Catch ALL non-command group events (Text, Photos, Captions, Documents)
+    all_group_messages_filter = ~filters.COMMAND & ~filters.StatusUpdate.ALL
+    application.add_handler(MessageHandler(all_group_messages_filter, handle_message))
 
-    logging.info("🚀 SabKraftTech Editor AI Bot Running...")
+    logging.info("🚀 SabKraftTech Permanent AI Bot Running...")
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
+        
