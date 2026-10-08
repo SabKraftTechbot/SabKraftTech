@@ -4,7 +4,6 @@ import re
 import threading
 import logging
 from flask import Flask
-import google.generativeai as genai
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     ApplicationBuilder,
@@ -25,7 +24,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def health():
-    return "SabKraftTech Filter-Based Bot Online!", 200
+    return "SabKraftTech Smart Tag-Filter Bot Online!", 200
 
 def run_flask():
     port = int(os.environ.get("PORT", 8080))
@@ -35,7 +34,6 @@ def run_flask():
 # 2. BOT CONFIG & BUTTONS
 # ==========================================
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 
 OFFICIAL_BUTTONS = InlineKeyboardMarkup([
     [
@@ -86,7 +84,7 @@ def extract_user_tag(update: Update) -> str:
     return f"[{user.first_name}](tg://user?id={user.id})"
 
 # ==========================================
-# 4. CORE MESSAGE HANDLER
+# 4. CORE MESSAGE HANDLER WITH SMART TAG FILTER
 # ==========================================
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
@@ -95,11 +93,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_type = update.message.chat.type
     user_tag = extract_user_tag(update)
     is_group = chat_type in ["group", "supergroup"]
+    bot_username = context.bot.username or ""
 
+    # Agar message me text ya caption hi nahi hai, toh ignore karein
     user_text = update.message.text or update.message.caption or ""
+    if not user_text.strip():
+        return
+
     user_text_clean = user_text.strip()
     lower_text = user_text_clean.lower()
-    bot_username = context.bot.username or ""
 
     # Group Link Blocker
     if is_group and user_text_clean:
@@ -110,7 +112,31 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception:
                 pass
 
-    # Button Keywords Check
+    # ==========================================
+    # 🎯 GROUP VS DIRECT CHAT LOGIC
+    # ==========================================
+    if is_group:
+        # Check karein ki kya user ne bot ko tag kiya hai ya bot ke message par reply kiya hai
+        is_tagged = (bot_username and f"@{bot_username}".lower() in lower_text) or (
+            update.message.reply_to_message
+            and update.message.reply_to_message.from_user
+            and update.message.reply_to_message.from_user.id == context.bot.id
+        )
+        
+        # Agar group me hai AUR tag/reply nahi kiya, toh bot chup rahega (channel forward ya random chat ignore)
+        if not is_tagged:
+            return
+
+    # Check rule from filters.json
+    matched_rule = get_matched_rule(lower_text)
+    if not matched_rule:
+        # Agar keyword match nahi hua aur group me tag kiya tha ya DM me hai, toh ek generic smart reply dega
+        reply_text = f"✨ Hey {user_tag}! SabKraftTech AI haazir hai. Video editing, apps ya YouTube guidelines ke baare me poochhein! 🚀"
+    else:
+        base_reply = matched_rule.get("reply", "")
+        reply_text = base_reply.replace("{user_tag}", user_tag)
+
+    # Button triggers check
     apk_keywords = ["apk", "capcut", "alight motion", "kinemaster", "vn", "pixellab", "picsart", "download", "mod", "premium", "apps", "modes"]
     material_keywords = ["material", "materials", "overlay", "transition", "preset", "png", "bgm", "sfx", "font", "bundle", "package"]
     official_keywords = ["sabkraft", "sabkrafttech", "admin", "malik", "owner", "creator", "youtube", "instagram"]
@@ -119,33 +145,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     is_material_query = any(kw in lower_text for kw in material_keywords)
     show_official = any(kw in lower_text for kw in official_keywords)
 
-    reply_text = ""
+    markup = None
+    if is_apk_query or is_material_query:
+        markup = MATERIAL_BUTTONS
+    elif show_official:
+        markup = OFFICIAL_BUTTONS
 
-    # Match Rule from filters.json
-    matched_rule = get_matched_rule(lower_text)
-
-    if matched_rule:
-        base_reply = matched_rule.get("reply", "")
-        reply_text = base_reply.replace("{user_tag}", user_tag)
-    else:
-        # Agar koi aisi baat likhe jo json me nahi hai, toh ek default aesthetic creator reply dega
-        reply_text = f"✨ Hey {user_tag}! SabKraftTech platform par aapka swagat hai. Video editing, apps ya YouTube tips ke liye batayein! 🚀"
-
-    # Send Response with Buttons
-    if reply_text:
-        markup = None
-        if is_apk_query or is_material_query:
-            markup = MATERIAL_BUTTONS
-        elif show_official:
-            markup = OFFICIAL_BUTTONS
-
+    # Send Response
+    try:
+        await update.message.reply_text(reply_text, reply_markup=markup, parse_mode="Markdown")
+    except Exception:
         try:
-            await update.message.reply_text(reply_text, reply_markup=markup, parse_mode="Markdown")
+            await update.message.reply_text(reply_text, reply_markup=markup)
         except Exception:
-            try:
-                await update.message.reply_text(reply_text, reply_markup=markup)
-            except Exception:
-                pass
+            pass
 
 # ==========================================
 # 5. APP STARTUP
@@ -162,8 +175,9 @@ def main():
         MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
     )
 
-    logging.info("🚀 SabKraftTech Filter-Based Bot Starting...")
+    logging.info("🚀 SabKraftTech Smart Tag-Filter Bot Starting...")
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
+    
