@@ -1,4 +1,4 @@
-import asyncio
+import json
 import os
 import re
 import threading
@@ -20,7 +20,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def health():
-  return "SabKraftTech Ultra Bot Online & Active!", 200
+  return "SabKraftTech Ultimate Multi-Category AI Bot Active!", 200
 
 
 def run_flask():
@@ -29,12 +29,12 @@ def run_flask():
 
 
 # ==========================================
-# 2. CONFIGURATION & BUTTONS
+# 2. CONFIGURATION & DYNAMIC BUTTONS
 # ==========================================
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 
-# Official Buttons (SIRF 'SabKraftTech', 'admin', 'channel', etc. par aayenge)
+# Official Main Social Buttons
 OFFICIAL_BUTTONS = InlineKeyboardMarkup([
     [
         InlineKeyboardButton(
@@ -55,21 +55,40 @@ OFFICIAL_BUTTONS = InlineKeyboardMarkup([
     ],
 ])
 
+# Direct Download / Editing Material Buttons
+MATERIAL_BUTTONS = InlineKeyboardMarkup([
+    [
+        InlineKeyboardButton(
+            "📦 Download Overlays & Effects", url="https://t.me/SabKraftTech"
+        )
+    ],
+    [
+        InlineKeyboardButton(
+            "🎨 Download Presets, PNGs & Fonts", url="https://t.me/SabKraftTech"
+        )
+    ],
+    [
+        InlineKeyboardButton(
+            "🎵 Download BGM & SFX Packs", url="https://t.me/SabKraftTech"
+        )
+    ],
+])
+
 # ==========================================
 # 3. GEMINI AI ENGINE SETUP
 # ==========================================
 SYSTEM_PROMPT = """
-You are SabKraftTech AI — a smart, short-replying, Gen-Z assistant for Video Editors, Graphic Designers, YouTubers, Freelancers, and Content Creators.
+You are SabKraftTech AI — an aesthetic, Gen-Z assistant for Video Editors, Graphic Designers, YouTubers, Freelancers, and Students.
 
-CORE BEHAVIOR RULES:
-1. ALWAYS TAG USER: Use exact user tag/name provided in context.
-2. SHORT & AESTHETIC: Maximum 2 to 3 short lines per reply. Bold key terms and use clean emojis (✨, ⚡, 🎬, 🚀, 🎨, 💡).
-3. TARGET AUDIENCE HELPER:
-   - Video Editors: CapCut, Alight Motion, Premiere, XML, Lag/Export fixes.
-   - Designers: PixelLab, Photoshop, Canva, Fonts, High CTR Thumbnails.
-   - YouTubers / Creators: Title SEO, CTR boost, RPM/CPM guidance.
-   - Freelancers & Students: Client rates, portfolio tips, unlocked tools.
-4. TONE: Professional, supportive, Hinglish (Latin script Hindi/Urdu).
+CORE RULES:
+1. ALWAYS TAG USER: Address the user using exact tag/name provided in context.
+2. SHORT & AESTHETIC: Maximum 2 to 3 lines. Use clean, bold headers and aesthetic emojis (✨, ⚡, 🎬, 🚀, 🎨, 💡, 📱, 💼).
+3. TARGETED EXPERT ADVICE:
+   - Video Editors / Designers: Fast, 2-step solutions for CapCut, Alight Motion, PixelLab, Premiere, XML, Fonts.
+   - YouTubers / Creators: Practical advice for CTR, RPM, Hooks, Thumbnails, Titles.
+   - Freelancers / Students: Portfolio tips, client acquisition, free resources.
+4. TROUBLESHOOTING: If user mentions an error or crash without an image, ALWAYS ask them to share a SCREENSHOT.
+5. TONE: Supportive, smart, professional Hinglish.
 """
 
 
@@ -92,7 +111,7 @@ def get_ai_model():
       except Exception:
         continue
   except Exception as e:
-    print(f"AI Init Warning: {e}")
+    print(f"AI Init Error: {e}")
   return None
 
 
@@ -109,104 +128,36 @@ def extract_user_tag(update: Update) -> str:
 
 
 # ==========================================
-# 4. INSTANT LOCAL GREETINGS ROUTER
+# 4. JSON CONFIG & FILTER READER
 # ==========================================
-def get_greeting_reply(text_lower: str, user_tag: str) -> str:
-  # Islamic Greetings
-  if any(
-      k in text_lower
-      for k in [
-          "aslm",
-          "salam",
-          "assalamu",
-          "walekum",
-          "ramzan",
-          "eid",
-          "jumma",
-      ]
-  ):
-    return (
-        f"Walaikum Assalam {user_tag}! 🌙 Mubarakbaad! Aaj editing, design, ya"
-        " YouTube project me kya help chahiye?"
-    )
+def load_json_config():
+  if os.path.exists("filters.json"):
+    try:
+      with open("filters.json", "r", encoding="utf-8") as f:
+        return json.load(f)
+    except Exception as e:
+      print(f"JSON Load Error: {e}")
+  return {"button_triggers": [], "custom_rules": []}
 
-  # Hindu Greetings
-  if any(
-      k in text_lower
-      for k in [
-          "namaste",
-          "namaskar",
-          "jai shree ram",
-          "ram ram",
-          "radhe radhe",
-          "diwali",
-          "holi",
-          "chhath",
-      ]
-  ):
-    return (
-        f"Namaste {user_tag}! 🙏 Shubhkaamnayein! Batayein aaj kaunsa naya"
-        " creative project chal raha hai?"
-    )
 
-  # Good Morning
-  if any(k in text_lower for k in ["good morning", "gm", "gud morning"]):
-    return (
-        f"Good Morning {user_tag}! ☀️ Naye din ke sath naya content create"
-        " karte hain. Aaj kya guide karu?"
-    )
+def get_filter_reply(lower_text: str, user_tag: str) -> str:
+  config = load_json_config()
+  rules = config.get("custom_rules", [])
 
-  # Good Evening
-  if any(k in text_lower for k in ["good evening", "ge", "gud evening"]):
-    return (
-        f"Good Evening {user_tag}! 🌇 Chai ke sath editing session chalu?"
-        " Batayein kya help chahiye!"
-    )
-
-  # Good Night
-  if any(
-      k in text_lower
-      for k in ["good night", "gn", "gud night", "gud nite", "shubh ratri"]
-  ):
-    return (
-        f"Good Night {user_tag}! 🌙 Aaj ka work save karke rest karein. Kal"
-        " milte hain fresh ideas ke sath!"
-    )
-
-  # General Hi / Hello
-  if text_lower in [
-      "hi",
-      "hello",
-      "helo",
-      "hey",
-      "sup",
-      "whats up",
-      "kya haal",
-      "kya hal",
-  ]:
-    return (
-        f"Hey {user_tag}! ⚡ Bilkul badhiya! Aap batao, aaj video editing,"
-        " thumbnail ya graphics me kya create ho raha hai?"
-    )
-
-  # Goodbye / Bye
-  if any(k in text_lower for k in ["bye", "by", "good bye", "tc", "take care"]):
-    return (
-        f"Take Care {user_tag}! 👋 Kuch bhi issue aaye toh group me message kar"
-        " dena. Keep creating! 🚀"
-    )
-
-  # Mystery Owner Rule
-  if any(
-      k in text_lower
-      for k in ["owner", "malik", "maalik", "who created", "creator of bot"]
-  ):
-    return (
-        f"🕵️ Hey {user_tag}! Unhone abhi identity **reveal nahi ki hai**!"
-        " Baki main SabKraftTech AI Assistant hu. ✨"
-    )
+  for rule in rules:
+    keywords = rule.get("keywords", [])
+    if any(kw in lower_text for kw in keywords):
+      reply = rule.get("reply", "")
+      return reply.replace("{user_tag}", user_tag)
 
   return ""
+
+
+def is_only_emoji(text: str) -> bool:
+  emoji_pattern = re.compile(
+      r"^[\s\U00010000-\U0010ffff\u2600-\u26ff\u2700-\u27bf]+$"
+  )
+  return bool(emoji_pattern.match(text))
 
 
 # ==========================================
@@ -225,7 +176,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
   user_text_clean = user_text.strip()
   lower_text = user_text_clean.lower()
 
-  # 1. Anti-Spam Link Blocker (Group me)
+  # 1. Anti-Spam Link Blocker (In Groups)
   if is_group and user_text_clean:
     if re.search(r"http[s]?://|t\.me/|telegram\.me/", user_text_clean):
       try:
@@ -244,35 +195,46 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_tagged:
       return
 
-  # 3. BUTTON TRIGGER CHECK (Only on SabKraftTech / Links related queries)
-  button_keywords = [
-      "sabkrafttech",
-      "admin",
-      "malik",
-      "owner",
-      "channel",
-      "group",
-      "youtube",
-      "instagram",
-      "links",
-      "social",
+  # 3. Check Button Triggers
+  config = load_json_config()
+  material_triggers = [
+      "material",
+      "materials",
+      "overlay",
+      "transition",
+      "preset",
+      "png",
+      "bgm",
+      "sfx",
+      "font",
+      "apk",
+      "download",
   ]
-  show_buttons = any(kw in lower_text for kw in button_keywords)
+
+  show_official_buttons = any(
+      kw in lower_text for kw in ["sabkrafttech", "admin", "malik", "owner"]
+  )
+  show_material_buttons = any(kw in lower_text for kw in material_triggers)
 
   reply_text = ""
 
-  # Step A: Local Greeting Match (Instant & Accurate)
-  greeting_reply = get_greeting_reply(lower_text, user_tag)
-  if greeting_reply:
-    reply_text = greeting_reply
+  # Step A: Check JSON Custom Rules First
+  matched_reply = get_filter_reply(lower_text, user_tag)
+  if matched_reply:
+    reply_text = matched_reply
 
-  # Step B: Photo / Screenshot Vision Scan
+  # Step B: Pure Emoji or Sticker Received
+  elif is_only_emoji(user_text_clean) or update.message.sticker:
+    reply_text = f"Hey {user_tag}! 🔥 Great vibe! What content are you working on today?"
+
+  # Step C: Screenshot Received (Vision AI Scan)
   elif update.message.photo:
     try:
       photo_file = await update.message.photo[-1].get_file()
       photo_bytes = await photo_file.download_as_bytearray()
       image_part = {"mime_type": "image/jpeg", "data": bytes(photo_bytes)}
 
+      # FIXED LINE HERE: Properly closed quotes and braces
       prompt = [
           (
               f"User Tag: {user_tag}\nQuery: {user_text_clean or 'Is error"
@@ -286,13 +248,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_text = res.text
       else:
         reply_text = (
-            f"✨ Hey {user_tag}! Screenshot scan busy hai. Problem text me"
-            " likhein!"
+            f"✨ Hey {user_tag}! Received your screenshot. Our team will verify"
+            " it soon!"
         )
     except Exception:
-      reply_text = f"✨ Hey {user_tag}! Problem text me likhkar poochein!"
+      reply_text = (
+          f"✨ Hey {user_tag}! Thanks for sending the screenshot. Please describe"
+          " the exact tool/app name!"
+      )
 
-  # Step C: Gemini AI for Editing / Graphics / YouTube / Freelance Queries
+  # Step D: Complex Query via Gemini AI
   elif user_text_clean:
     try:
       model = ai_model or get_ai_model()
@@ -301,48 +266,5 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"User Tag: {user_tag}\nMessage Context & Query: {user_text_clean}"
         )
         res = model.generate_content(prompt)
-        reply_text = res.text
-      else:
-        reply_text = (
-            f"✨ Hey {user_tag}! Main active hu. Batayein, aaj editing ya"
-            " design me kya help chahiye?"
-        )
-    except Exception:
-      reply_text = (
-          f"✨ Hey {user_tag}! Direct apna issue type karein, main madad"
-          " karunga!"
-      )
-
-  # Send Final Output
-  if reply_text:
-    markup = OFFICIAL_BUTTONS if show_buttons else None
-    try:
-      await update.message.reply_text(
-          reply_text, reply_markup=markup, parse_mode="Markdown"
-      )
-    except Exception:
-      await update.message.reply_text(reply_text, reply_markup=markup)
-
-
-# ==========================================
-# 6. APPLICATION STARTUP
-# ==========================================
-def main():
-  threading.Thread(target=run_flask, daemon=True).start()
-
-  if not TELEGRAM_TOKEN:
-    print("❌ ERROR: TELEGRAM_BOT_TOKEN missing in Environment Variables!")
-    return
-
-  application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-  application.add_handler(
-      MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
-  )
-
-  print("🚀 SabKraftTech Single-File Bot Active & Running!")
-  application.run_polling()
-
-
-if __name__ == "__main__":
-  main()
+        reply_
         
