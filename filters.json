@@ -1,0 +1,127 @@
+{
+  "button_triggers": [
+    "sabkrafttech",
+    "admin",
+    "malik",
+    "owner",
+    "channel",
+    "group",
+    "youtube",
+    "instagram",
+    "social",
+    "links",
+    "material",
+    "materials",
+    "overlay",
+    "transition",
+    "preset",
+    "png",
+    "bgm",
+    "sfx",
+    "font",
+    "apk",
+    "download"
+  ],
+  "custom_rules": [
+    {
+      "category": "Islamic Greetings",
+      "keywords": ["aslm", "salam", "assalamu", "walekum", "ramzan", "eid", "jumma"],
+      "reply": "Walaikum Assalam {user_tag}! 🌙 Mubarakbaad! Aaj editing, design ya YouTube me kya help chahiye?"
+    },
+    {
+      "category": "Hindu Greetings",
+      "keywords": ["namaste", "namaskar", "jai shree ram", "ram ram", "radhe radhe", "diwali", "holi", "chhath"],
+      "reply": "Namaste {user_tag}! 🙏 Shubhkaamnayein! Aasha hai aapka creative project badhiya chal raha hai!"
+    },
+    {
+      "category": "Good Morning",
+      "keywords": ["good morning", "gm", "gud morning", "gud mrng"],
+      "reply": "Good Morning {user_tag}! ☀️ Fresh day, fresh content! Aaj kya create kar rahe ho?"
+    },
+    {
+      "category": "Good Evening",
+      "keywords": ["good evening", "ge", "gud evening", "gud evng"],
+      "reply": "Good Evening {user_tag}! 🌇 Chai ke sath editing session chalu? Batayein kya guide karu!"
+    },
+    {
+      "category": "Good Night",
+      "keywords": ["good night", "gn", "gud night", "gud nite", "shubh ratri"],
+      "reply": "Good Night {user_tag}! 🌙 Kaam save karke rest karein. Kal milte hain fresh ideas ke sath!"
+    },
+    {
+      "category": "Hi / Hello",
+      "keywords": ["hi", "hello", "helo", "hey", "sup", "whats up"],
+      "reply": "Hey {user_tag}! ⚡ Bilkul badhiya! Aaj video editing, thumbnail ya tools me kya help chahiye?"
+    },
+    {
+      "category": "Family & Relatives",
+      "keywords": ["abbu", "ammi", "mummy", "papa", "bhaiya", "didi", "family", "rishtedar", "ghar wale"],
+      "reply": "Hey {user_tag}! 🏡 Family sabse pehle hai! Unka respect aur care karein, baki creator journey me hum aapke sath hain! ✨"
+    },
+    {
+      "category": "GF / BF / Relationship",
+      "keywords": ["girlfriend", "boyfriend", "gf", "bf", "crush", "love", "breakup", "relationship", "pyaar", "single"],
+      "reply": "Hey {user_tag}! 💔/❤️ Distractions ko side me rakho aur apne skills/career par focus karo. Jab success milegi, sab line me honge! 🚀"
+    },
+    {
+      "category": "YouTube Category",
+      "keywords": ["youtube", "ctr", "rpm", "cpm", "views", "impressions", "seo", "monetization", "shadowban", "algorithm", "shorts views"],
+      "reply": "Hey {user_tag}! 📈 **YouTube Growth Formula**: High-CTR Thumbnail + First 5 Sec Hook + Proper SEO Title. Analytics check karke batayein kahan drop ho raha hai!"
+    },
+    {
+      "category": "Premium Mod Apps",
+      "keywords": ["apk", "capcut pro", "alight motion mod", "kinemaster pro", "pixellab pro", "photoshop mobile", "remini mod", "canva pro", "unlocked apk"],
+      "reply": "Hey {user_tag}! 📱 **Mod Features Unlocked**: No Watermark + 4K Export + Premium Transitions/Effects Active! Telegram channel par direct APK link pinned hai. 🚀"
+    },
+    {
+      "category": "Editing Materials & Assets",
+      "keywords": ["material", "materials", "overlay", "overlays", "transition", "transitions", "background", "backgrounds", "apng", "png", "luts", "presets", "fonts", "light leaks"],
+      "reply": "Hey {user_tag}! 🎨 **4K Editing Pack Loaded**: Premium Overlays, Transitions, PNGs, Presets aur APNG Assets direct Telegram channel par available hain. Niche button par click karke download karein! ⬇️"
+    },
+    {
+      "category": "Music / BGM / SFX",
+      "keywords": ["bgm", "sfx", "no copyright music", "sound effects", "vlog bgm", "phonk", "cinematic bgm", "background music"],
+      "reply": "Hey {user_tag}! 🎵 **No-Copyright Audio Pack**: High-Energy Phonk, Cinematic BGM aur Whoosh SFX collection channel par uploaded hai! Check out karein. 🎧"
+    },
+    {
+      "category": "Graphics Designing",
+      "keywords": ["thumbnail", "poster", "banner", "psd", "pixelab", "color grading", "graphics", "designing", "lightroom"],
+      "reply": "Hey {user_tag}! 🎨 **Pro Design Tip**: Contrasting colors, bold clean fonts aur expressive face PNGs use karo. High CTR Guarantee! 🔥"
+    },
+    {
+      "category": "Freelancing & Student Career",
+      "keywords": ["freelance", "freelancing", "client", "clients", "fiverr", "upwork", "portfolio", "student", "earning", "rate"],
+      "reply": "Hey {user_tag}! 💼 **Student/Freelancer Tip**: Apna 3-best videos ka Portfolio drive link banao aur direct creators ko Instagram/Email par cold message karo!"
+    },
+    {
+      "category": "Social Media & Reels Reach",
+      "keywords": ["reels", "instagram reach", "copyright", "strike", "claim", "facebook monetization", "telegram grow"],
+      "reply": "Hey {user_tag}! 📲 **Reels Virality**: Trending Audio + Fast Paced Visual Cuts in first 3 seconds. Copyright se bachne ke liye pitch 2% badha dein!"
+    },
+    {
+      "category": "Gaming & Montages",
+      "keywords": ["bgmi", "free fire", "ff", "pubg", "montage", "gaming thumbnail", "fps", "gameplay"],
+      "reply": "Hey {user_tag}! 🎮 **Gaming Edit Tip**: Beats synchronization + Velocity Edits + SFX (Gunshots/Kill effects) se montage next level banta hai!"
+    },
+    {
+      "category": "App Not Working / Bug / Crash",
+      "keywords": ["not working", "crash", "error", "black screen", "install error", "lag", "open nahi ho raha", "bug", "problem"],
+      "reply": "Hey {user_tag}! ⚠️ Error ko accurately samjhne aur better help ke liye **Kripya SCREENSHOT bhejein**! Hum turant solution denge. 📸"
+    },
+    {
+      "category": "Appreciation / Feedback",
+      "keywords": ["working", "mast hai", "op", "love you", "great", "thank you", "thanks", "shukriya", "best bot", "nice"],
+      "reply": "Thank you so much {user_tag}! ❤️⚡ Aapka feedback humare liye bohot maayne rakhta hai. Bas aise hi awesome content create karte rahein! 🚀"
+    },
+    {
+      "category": "Hate / Trolling",
+      "keywords": ["fake", "scam", "bakwas", "bad bot", "trash", "faltu"],
+      "reply": "Hey {user_tag}! 😊 Hum yahan aapki help ke liye hain. Agar koi specific issue hai toh Screenshot ke sath batayein, hum fix karenge!"
+    },
+    {
+      "category": "Goodbye / Exit",
+      "keywords": ["bye", "byy", "good bye", "tc", "take care", "alvida"],
+      "reply": "Take Care {user_tag}! 👋 Connected rahein aur naye packs/tools ke liye channel check karte rahein! 🚀"
+    }
+  ]
+}
