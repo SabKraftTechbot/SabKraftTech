@@ -1,199 +1,163 @@
 {
-  "button_triggers": [
-    "sabkraft",
-    "sabkrafttech",
-    "admin",
-    "malik",
-    "owner",
-    "channel",
-    "group",
-    "youtube",
-    "instagram",
-    "social",
-    "links",
-    "material",
-    "materials",
-    "overlay",
-    "transition",
-    "preset",
-    "png",
-    "bgm",
-    "sfx",
-    "font",
-    "apk",
-    "apps",
-    "mod",
-    "modes",
-    "download",
-    "earning",
-    "meme",
-    "hacks",
-    "bundle",
-    "package"
-  ],
-  "custom_rules": [
+  "filters": [
     {
-      "category": "SabKraft Brand Greeting",
+      "category": "1. MUSLIM GREETINGS (ISLAMIC & URDU)",
       "keywords": [
-        "sabkraft",
-        "sabkrafttech"
+        "assalamu alaikum", "assalam o alaikum", "slam", "salam", "walaikum assalam", 
+        "walekum assalam", "jumma mubarak", "juma mubarak", "ramadan", "ramzan", 
+        "eid mubarak", "mashallah", "subhanallah", "alhamdulillah", "inshallah", "jazakallah"
       ],
-      "reply": "✨ **SABKRAFTTECH OFFICIAL**\n\nHey {user_tag}! Yeh aapka apna creator hub hai. Video editing tools, presets, ya YouTube growth se related kya chahiye batayein! 🚀"
+      "reply": "✨ **Walaikum Assalam Wa Rahmatullahi Wa Barakatuh {user_tag}!**\n\nSabKraftTech platform par aapka dil se khair-mquqadam hai. Allah aapke ilm, waqt aur kamai me barakat ata farmaye. Batayein aaj kis editing topic ya guidance me aapki madad ki jaye?",
+      "button_type": "none"
     },
     {
-      "category": "Short Casual Greetings (Hi/Hello)",
+      "category": "2. HINDU GREETINGS (HINDI & SANSKRITIC)",
       "keywords": [
-        "hi",
-        "hii",
-        "hlo",
-        "hlw",
-        "hello",
-        "hey",
-        "hy",
-        "hyy"
+        "namaste", "namaskar", "pranam", "pranaam", "jai shree ram", "jai sri ram", 
+        "har har mahadev", "radhe radhe", "jai mata di", "shubh prabhat", "shubh sandhya", 
+        "shubh ratri", "jai hanuman"
       ],
-      "reply": "✨ Welcome to SabKraftTech {user_tag}! 👋 Aaj batayein, video editing karni hai, graphics design, ya premium APK chahiye? 🚀"
+      "reply": "✨ **Namaste {user_tag}!**\n\nSabKraftTech par aapka saahard abhinandan. Aasha hai aapka din safalta, sukh aur nayi creativity se bharpoor rahega. Batayein aaj aapke video project me kya support chahiye?",
+      "button_type": "none"
     },
     {
-      "category": "Refined Islamic Greetings",
+      "category": "3. CHRISTIAN GREETINGS",
       "keywords": [
-        "aslm",
-        "salam",
-        "assalamu",
-        "assalamu alaikum",
-        "assalam o alaikum",
-        "assalamualaikum",
-        "walekum",
-        "walekum assalam",
-        "ramzan",
-        "eid",
-        "jumma",
-        "jumma mubarak"
+        "hallelujah", "praise the lord", "god bless", "god bless you", "amen", 
+        "merry christmas", "happy easter", "lord bless"
       ],
-      "reply": "Walaikum Assalam {user_tag}! 🌙 Mubarakbaad! Aaj video editing, graphic design ya YouTube content me kya help chahiye? 🤲"
+      "reply": "✨ **Praise the Lord & Warm Blessings {user_tag}!**\n\nWelcome to SabKraftTech. May peace, grace, and wisdom be upon you today. Feel free to ask anything regarding content creation or design resources!",
+      "button_type": "none"
     },
     {
-      "category": "Good Morning",
+      "category": "4. DAILY GREETINGS & CASUAL TALKS",
       "keywords": [
-        "good morning",
-        "gud morning",
-        "gud mrng"
+        "good morning", "gm", "good night", "gn", "good evening", "good afternoon", 
+        "bye", "goodbye", "ttyl", "see you", "take care", "have a nice day", 
+        "kaise ho", "kya haal", "kya chal raha hai", "kaisa hai"
       ],
-      "reply": "Good Morning {user_tag}! ☀️ Fresh day, fresh content! Aaj kya create kar rahe ho?"
+      "reply": "✨ **Hello {user_tag}!**\n\nSabKraftTech Assistant ki taraf se shubh kamnayein! Main bilkul badiya hoon. Aaj aapka creative mood kaisa hai aur kis naye project par kaam karne ka plan hai?",
+      "button_type": "none"
     },
     {
-      "category": "Good Evening",
+      "category": "5. EMOTIONAL SUPPORT - ALONE, DISTRACTION & FOCUS ISSUE",
       "keywords": [
-        "good evening",
-        "ge",
-        "gud evening",
-        "gud evng"
+        "alone", "akela", "lonely", "distraction", "distract", "focus nahi ho raha", 
+        "padhai nahi ho rahi", "dhyan nahi lag raha", "mind diversion", "laziness", "procrastination"
       ],
-      "reply": "Good Evening {user_tag}! 🌇 Chai ke sath editing session chalu? Batayein kya guide karu!"
+      "reply": "❤️ **Suno {user_tag}, Tum Akele Nahi Ho!**\n\nKabhi-kabhi mind ka distract hona normal hai. Phone side rakho, 5 minute lambi saans lo aur yaad karo tumne yeh journey kyun start ki thi.\n\n• Target chhota banao (sirf agle 30 min kaam karo).\n• Apne sapnon ko kisi temporary distraction ke liye mat chhodo. Hum sab tumhare sath hain, mehnat karo!",
+      "button_type": "none"
     },
     {
-      "category": "Good Night",
+      "category": "6. EMOTIONAL SUPPORT - BREAKUP, EX, GF/BF & HEARTBREAK",
       "keywords": [
-        "good night",
-        "gud night",
-        "gud nite",
-        "shubh ratri"
+        "breakup", "ex", "gf", "bf", "girlfriend", "boyfriend", "dil toot gaya", 
+        "dil dukh raha", "yaad aa rahi", "depression"
       ],
-      "reply": "Good Night {user_tag}! 🌙 Kaam save karke rest karein. Kal milte hain fresh ideas ke sath!"
+      "reply": "🕊️ **Stay Strong {user_tag}!**\n\nJo cheez aapke control me nahi hai, uspar apna future mat kharab karo. Log aayenge aur jayenge, lekin jo skill aur career aap banaoge woh hamesha aapke sath rahega.\n\nIs dard ko apni **Strength** banao. Apni saari energy editing, skill-building aur YouTube par lagao—ek din aapki success sab bol kar batayegi!",
+      "button_type": "none"
     },
     {
-      "category": "Daily Casual Chats & Greetings",
+      "category": "7. MOTIVATION, DISCIPLINE & GOALS",
       "keywords": [
-        "kya haal hai",
-        "kaise ho",
-        "kaise ho bhai",
-        "kaise ho sir",
-        "wassup",
-        "sab thik",
-        "sab badiya",
-        "kya chal raha hai",
-        "kya ho raha hai"
+        "motivation", "motivational", "demotivate", "hard work", "consistency", 
+        "success", "goal", "dream", "discipline", "mindset"
       ],
-      "reply": "Hey {user_tag}! 👋 Sab ekdum badhiya aur set hai! Aap batao, aaj kya scene hai? Kaunse project ya video par kaam chal raha hai? ✨🔥"
+      "reply": "🔥 **Creator Mindset {user_tag}!**\n\n\"Safalta raato-raat nahi milti, lekin roz ka 1% improvement aapko ek din sabse alag aur top level par khada kar deta hai.\"\n\nBina parinaam ki chinta kiye, roz thoda-thoda kaam karte raho. Mehnat ka phal zaroor milega!",
+      "button_type": "none"
     },
     {
-      "category": "Farewells & Good Byes",
+      "category": "8. FAMILY, RELATIVES & COMMUNITY TALKS",
       "keywords": [
-        "good bye",
-        "bye",
-        "by",
-        "alvida",
-        "good day",
-        "have a nice day",
-        "cya",
-        "see you"
+        "bhai", "bro", "brother", "family", "pariwar", "ghar wale", "rishtedar", 
+        "relatives", "friends", "dost", "dosti", "group members", "sabkraft family"
       ],
-      "reply": "👋 Bye {user_tag}! Have a great day ahead! Apna kaam save kar lena, aur kal nayi creative energy ke sath wapas aana! ✨"
+      "reply": "✨ **SabKraftTech Family Swagat Karti Hai!**\n\nHum sab yahan ek creator community ki tarah hain. Ek dusre ke sath seekhna, grow karna aur best quality content banana hi humara maqsad hai. Aap sabhi ka support hi humari strength hai!",
+      "button_type": "none"
     },
     {
-      "category": "Help & Support Requests",
+      "category": "9. BRANDING, ADMIN & OWNER MENTIONS",
       "keywords": [
-        "help",
-        "madad",
-        "help me",
-        "please help",
-        "support chahiye",
-        "bhai help"
+        "sabkrafttech", "sabkraft", "owner", "malik", "sabit", "admin", 
+        "creator", "channel", "group"
       ],
-      "reply": "🤝 **HELP & SUPPORT**\n\nHey {user_tag}! SabKraftTech AI haazir hai. Apni problem detail me likhein—Editing me dikkat hai ya koi App download karna hai? 💡"
+      "reply": "✨ **SabKraftTech Official Hub**\n\nHello {user_tag}! SabKraftTech ke official channels, social profiles aur YouTube handle ke links niche diye gaye hain:",
+      "button_type": "official"
     },
     {
-      "category": "App Errors, Bugs & Server Issues",
+      "category": "10. VIDEO EDITING MATERIALS & PACKS",
       "keywords": [
-        "not working",
-        "not available",
-        "error",
-        "kmm nhi kr rha hai",
-        "kaam nahi kar raha",
-        "glitch",
-        "server down",
-        "crash",
-        "problem",
-        "issue",
-        "open nahi ho raha"
+        "material", "materials", "editing pack", "overlay", "overlays", "preset", 
+        "presets", "bgm", "sfx", "sound effect", "sound effects", "transition", 
+        "light leak", "particle", "lut", "luts", "xml", "4k overlay"
       ],
-      "reply": "⚠️ **SYSTEM / APP ISSUE**\n\nHey {user_tag}! Agar koi App ya link kaam nahi kar raha hai, toh ghabrayein nahi. Thodi der baad try karein ya humara Telegram channel check karein! 🛠️"
+      "reply": "✨ **SabKraftTech Cinematic Assets**\n\n4K Overlays, Sound SFX Packs, Non-Copyright BGMs, Light Leaks aur Color LUTs SabKraftTech official channel me properly categorized aur pinned hain.",
+      "button_type": "material"
     },
     {
-      "category": "CapCut Pro APK",
+      "category": "11. APPS & MOD APKS",
       "keywords": [
-        "capcut",
-        "capcut pro",
-        "capcut apk",
-        "capcut mod"
+        "capcut", "alight motion", "kinemaster", "pixellab", "picsart", "vn", 
+        "remini", "lightroom", "node video", "inshot", "apk", "mod apk", "pro apk"
       ],
-      "reply": "🎬 **CAPCUT PRO APK**\n\nHey {user_tag}! CapCut Pro Features:\n• No Watermark & 4K 60FPS Export\n• All Pro Effects, Transitions & Auto-Caption Active\n\n👉 Download link ke liye humare official channel par visit karein!"
+      "reply": "✨ **Pro Mobile Applications**\n\nCapCut Pro, Alight Motion XML, KineMaster No-Watermark, PixelLab Ultra (Pre-loaded Fonts) aur Premium Editing Tools direct download karne ke liye channel check karein.",
+      "button_type": "material"
     },
     {
-      "category": "Alight Motion & Motion Mods",
+      "category": "12. THUMBNAIL MATERIALS & HIGH-CTR GUIDES",
       "keywords": [
-        "alight motion",
-        "alightmotion",
-        "xml support",
-        "am mod"
+        "thumbnail", "thumbnail design", "ctr", "thumbnail font", "glow effect", 
+        "text effect", "thumbnail background", "thumbnail pack", "high ctr"
       ],
-      "reply": "⚡ **ALIGHT MOTION MOD**\n\nHey {user_tag}! Features:\n• XML File Import/Export Fully Working\n• No Watermark & Custom Fonts Support\n\n👉 Download ke liye channel check karein!"
+      "reply": "✨ **High CTR Thumbnail Resources**\n\n• **Formula:** Max 3 words, High-Contrast Text aur Bright Border Glow.\n• **Materials:** Aesthetic backgrounds, PNG cutout packs aur Premium Fonts channel me uploaded hain.",
+      "button_type": "material"
     },
     {
-      "category": "Editing Materials & Assets General",
+      "category": "13. GRAPHIC DESIGN ASSETS",
       "keywords": [
-        "material",
-        "materials",
-        "overlay",
-        "preset",
-        "png",
-        "bgm",
-        "sfx",
-        "font",
-        "bundle"
+        "graphic design", "font", "fonts", "png", "png pack", "brush stroke", 
+        "texture", "paper tear", "typography", "vector", "poster design", "banner"
       ],
-      "reply": "Hey {user_tag}! 🎨 **Editing Pack Loaded**: Premium Overlays, Transitions, PNGs, Presets aur APNG Assets direct Telegram channel par available hain! ⬇️"
+      "reply": "✨ **Graphic Design Essentials**\n\nTrending Bold Fonts, HD Calligraphy PNGs, Paper Tear Textures aur Design Bundles SabKraftTech channel me available hain.",
+      "button_type": "material"
+    },
+    {
+      "category": "14. YOUTUBE GROWTH, ALGORITHM & POLICY",
+      "keywords": [
+        "youtube tips", "youtube algorithm", "channel growth", "monetization", 
+        "copyright", "strike", "reused content", "youtube update", "seo", 
+        "tags", "title", "description"
+      ],
+      "reply": "✨ **YouTube Growth Strategy**\n\n• **Viral Formula:** High CTR (Click Rate) + High Retention (Average View Duration).\n• **Copyright Protection:** Audio/Video reuse karte waqt transforming voiceover aur value addition zaroor karein.",
+      "button_type": "none"
+    },
+    {
+      "category": "15. ARTIFICIAL INTELLIGENCE & FUTURE TECH",
+      "keywords": [
+        "ai", "gemini", "chatgpt", "ai tool", "ai video", "ai image", "midjourney", 
+        "leonardo ai", "elevenlabs", "ai voice", "ai prompt", "text to video", "technology"
+      ],
+      "reply": "✨ **AI & Future Tech Tools**\n\n• **Scripting:** Gemini aur ChatGPT se high-retention hooks likhein.\n• **Voiceover:** ElevenLabs se realistic narration generate karein.\n• **Visuals:** Leonardo AI & Midjourney se 4K backgrounds generate karein.",
+      "button_type": "none"
+    },
+
+    {
+      "category": "16. MONEY EARNING, FREELANCING & REVENUE",
+      "keywords": [
+        "money", "earning", "paisa", "sponsorship", "freelancing", "client", 
+        "earning tips", "revenue", "cpm", "rpm"
+      ],
+      "reply": "✨ **Creator Monetization Avenues**\n\n• **Services:** Clients ko Video Editing aur High-CTR Thumbnails sell karein.\n• **High RPM:** Tech aur Educational tutorials par CPM/RPM sabse uuncha milta hai.\n• **Consistency:** Portfolio maintain karke brands se direct sponsorship paayein.",
+      "button_type": "none"
+    },
+    {
+      "category": "17. CONTENT WRITING & SCRIPTING",
+      "keywords": [
+        "content writer", "script", "scriptwriting", "hook", "storytelling", 
+        "video idea", "topic idea", "content strategy"
+      ],
+      "reply": "✨ **Cinematic Script Formula**\n\n• **0-5s Hook:** Direct visual shocker ya compelling question.\n• **Retention Gaps:** Har 20-30 seconds me naya visual element ya audio cue.\n• **Call To Action:** Outro me clear engagement command.",
+      "button_type": "none"
     }
   ]
-    }
-      
+}
