@@ -1,10 +1,11 @@
+import json
 import os
-import logging
-import threading
 import re
+import threading
+import logging
 from flask import Flask
 import google.generativeai as genai
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     ApplicationBuilder,
     ContextTypes,
@@ -13,7 +14,7 @@ from telegram.ext import (
 )
 
 # ==========================================
-# 1. LOGGING & SERVER SETUP
+# 1. LOGGING & FLASK HEALTH CHECK
 # ==========================================
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -24,108 +25,120 @@ app = Flask(__name__)
 
 @app.route("/")
 def health():
-    return "SabKraftTech Pure AI Bot is Running smoothly!", 200
+    return "SabKraftTech Filter-Based Bot Online!", 200
 
 def run_flask():
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port, use_reloader=False)
 
 # ==========================================
-# 2. API KEYS & GEMINI SETUP
+# 2. BOT CONFIG & BUTTONS
 # ==========================================
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 
-def get_ai_model():
-    if not GEMINI_KEY:
-        logging.error("GEMINI_API_KEY missing!")
-        return None
-    try:
-        genai.configure(api_key=GEMINI_KEY)
-        generation_config = genai.types.GenerationConfig(
-            temperature=0.9,
-            top_p=0.95,
-        )
-        return genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=generation_config)
-    except Exception as e:
-        logging.error(f"Gemini Init Error: {e}")
-        return None
+OFFICIAL_BUTTONS = InlineKeyboardMarkup([
+    [
+        InlineKeyboardButton("📢 Telegram Channel", url="https://t.me/SabKraftTech"),
+        InlineKeyboardButton("👥 Telegram Group", url="https://t.me/TeamSabKraftTech")
+    ],
+    [
+        InlineKeyboardButton("▶️ YouTube Channel", url="https://youtube.com/@sabkrafttech?si=BvFSMTysyXScxEj2"),
+        InlineKeyboardButton("📸 Instagram ID", url="https://instagram.com/sabkrafttech")
+    ]
+])
 
-ai_model = get_ai_model()
+MATERIAL_BUTTONS = InlineKeyboardMarkup([
+    [InlineKeyboardButton("📱 Download Premium APKs & Mods", url="https://t.me/SabKraftTech")],
+    [InlineKeyboardButton("📦 Overlays, Presets & Fonts", url="https://t.me/SabKraftTech")],
+    [InlineKeyboardButton("🎵 BGM & SFX Packs", url="https://t.me/SabKraftTech")]
+])
 
 # ==========================================
-# 3. ADVANCED AI PERSONA (DIMAAG)
+# 3. JSON CONFIG LOADER
 # ==========================================
-SYSTEM_PERSONA = (
-    "You are SabKraftTech AI — an elite, smart, and friendly assistant created by Mohammad Sabit Javed for SabKraftTech.\n"
-    "YOUR ROLE & BEHAVIOR:\n"
-    "1. Respond to EVERY message in chats and groups naturally and smartly (no tagging required).\n"
-    "2. Understand user moods, language (Hinglish/Hindi/English), and demands instantly.\n"
-    "3. Handle all greetings gracefully: Assalamualaikum, Good Morning, Good Evening, Good Night, Good Day, Hi, Hello, etc.\n"
-    "4. For editing queries, apps/APKs (CapCut, Alight Motion, KineMaster, VN, Pixellab), video editing tips, YouTube growth, or materials, guide them warmly and point them to the SabKraftTech Telegram channel (t.me/SabKraftTech).\n"
-    "5. Keep responses short, punchy (1-2 lines), aesthetic, and filled with cool emojis (✨, 🚀, 💡, 🎬, 📱, 🤲, ❤️).\n"
-    "6. NEVER repeat the exact same response. Make every reply fresh, dynamic, and human-like."
-)
+def load_json_config():
+    if os.path.exists("filters.json"):
+        try:
+            with open("filters.json", "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {"button_triggers": [], "custom_rules": []}
+
+def get_matched_rule(lower_text: str):
+    config = load_json_config()
+    rules = config.get("custom_rules", [])
+    for rule in rules:
+        keywords = rule.get("keywords", [])
+        for kw in keywords:
+            pattern = r'\b' + re.escape(kw.lower().strip()) + r'\b'
+            if re.search(pattern, lower_text):
+                return rule
+    return None
 
 def extract_user_tag(update: Update) -> str:
     user = update.effective_user
     if not user:
         return "Creator"
-    return f"@{user.username}" if user.username else user.first_name
+    if user.username:
+        return f"@{user.username}"
+    return f"[{user.first_name}](tg://user?id={user.id})"
 
 # ==========================================
-# 4. MAIN MESSAGE HANDLER
+# 4. CORE MESSAGE HANDLER
 # ==========================================
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
 
+    chat_type = update.message.chat.type
     user_tag = extract_user_tag(update)
+    is_group = chat_type in ["group", "supergroup"]
+
     user_text = update.message.text or update.message.caption or ""
     user_text_clean = user_text.strip()
+    lower_text = user_text_clean.lower()
+    bot_username = context.bot.username or ""
 
-    # Agar sirf image aayi hai bina text ke
-    if not user_text_clean and update.message.photo:
-        user_text_clean = "User shared an image. Acknowledge it nicely."
+    # Group Link Blocker
+    if is_group and user_text_clean:
+        if re.search(r"http[s]?://|t\.me/|telegram\.me/", user_text_clean):
+            try:
+                await update.message.delete()
+                return
+            except Exception:
+                pass
 
-    if not user_text_clean and not update.message.photo:
-        return
+    # Button Keywords Check
+    apk_keywords = ["apk", "capcut", "alight motion", "kinemaster", "vn", "pixellab", "picsart", "download", "mod", "premium", "apps", "modes"]
+    material_keywords = ["material", "materials", "overlay", "transition", "preset", "png", "bgm", "sfx", "font", "bundle", "package"]
+    official_keywords = ["sabkraft", "sabkrafttech", "admin", "malik", "owner", "creator", "youtube", "instagram"]
 
-    # Prepare Dynamic AI Prompt
-    dynamic_prompt = (
-        f"{SYSTEM_PERSONA}\n\n"
-        f"User Tag: {user_tag}\n"
-        f"User Message: \"{user_text_clean}\"\n"
-        f"SabKraftTech AI Response:"
-    )
+    is_apk_query = any(kw in lower_text for kw in apk_keywords)
+    is_material_query = any(kw in lower_text for kw in material_keywords)
+    show_official = any(kw in lower_text for kw in official_keywords)
 
     reply_text = ""
-    model = ai_model or get_ai_model()
 
-    # AI Request
-    try:
-        if update.message.photo:
-            photo_file = await update.message.photo[-1].get_file()
-            photo_bytes = await photo_file.download_as_bytearray()
-            image_part = {"mime_type": "image/jpeg", "data": bytes(photo_bytes)}
-            res = model.generate_content([dynamic_prompt, image_part])
-        else:
-            res = model.generate_content(dynamic_prompt)
-            
-        reply_text = res.text.strip()
-    except Exception as e:
-        logging.error(f"AI Generation Error: {e}")
-        reply_text = f"✨ Hey {user_tag}! Sab kuch set hai, batayein kya help chahiye? 🚀"
+    # Match Rule from filters.json
+    matched_rule = get_matched_rule(lower_text)
 
-    # Send Output with Official SabKraftTech Channel Button
+    if matched_rule:
+        base_reply = matched_rule.get("reply", "")
+        reply_text = base_reply.replace("{user_tag}", user_tag)
+    else:
+        # Agar koi aisi baat likhe jo json me nahi hai, toh ek default aesthetic creator reply dega
+        reply_text = f"✨ Hey {user_tag}! SabKraftTech platform par aapka swagat hai. Video editing, apps ya YouTube tips ke liye batayein! 🚀"
+
+    # Send Response with Buttons
     if reply_text:
-        markup = InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("📢 Telegram Channel", url="https://t.me/SabKraftTech"),
-                InlineKeyboardButton("👥 Telegram Group", url="https://t.me/TeamSabKraftTech")
-            ]
-        ])
-        
+        markup = None
+        if is_apk_query or is_material_query:
+            markup = MATERIAL_BUTTONS
+        elif show_official:
+            markup = OFFICIAL_BUTTONS
+
         try:
             await update.message.reply_text(reply_text, reply_markup=markup, parse_mode="Markdown")
         except Exception:
@@ -135,23 +148,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 pass
 
 # ==========================================
-# 5. START APP
+# 5. APP STARTUP
 # ==========================================
 def main():
     threading.Thread(target=run_flask, daemon=True).start()
 
     if not TELEGRAM_TOKEN:
-        logging.error("❌ TELEGRAM_TOKEN is missing!")
+        logging.error("❌ TELEGRAM_TOKEN environment variable missing!")
         return
 
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-    
-    # Catch all messages (Text, Photos, etc.)
-    application.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, handle_message))
+    application.add_handler(
+        MessageHandler(filters.ALL & ~filters.COMMAND, handle_message)
+    )
 
-    logging.info("🚀 SabKraftTech Pure AI Bot Started Successfully!")
+    logging.info("🚀 SabKraftTech Filter-Based Bot Starting...")
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
-    
