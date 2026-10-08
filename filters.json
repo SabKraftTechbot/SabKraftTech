@@ -91,7 +91,6 @@
       "category": "Good Evening",
       "keywords": [
         "good evening",
-        "ge",
         "gud evening",
         "gud evng"
       ],
@@ -127,12 +126,11 @@
         "kya chal raha hai",
         "kya ho raha hai",
         "kya kar rahe ho",
-        "hi",
         "hello",
         "helo",
-        "hey",
-        "sup",
-        "whats up"
+        "hey bot",
+        "whats up",
+        "kya hl"
       ],
       "reply": "Hey {user_tag}! 👋 Sab ekdum badhiya aur set hai! Aap batao, aaj kya scene hai? Kaunse project ya video par kaam chal raha hai? ✨🔥"
     },
@@ -228,6 +226,7 @@
       "category": "Creator Motivation & Quotes",
       "keywords": [
         "motivation",
+        "motivational",
         "motivate",
         "quote",
         "quotes",
@@ -329,8 +328,6 @@
       "keywords": [
         "girlfriend",
         "boyfriend",
-        "gf",
-        "bf",
         "crush",
         "love",
         "breakup",
@@ -552,4 +549,4 @@
         "edit kaisa hai",
         "feedback edit"
       ],
-      "reply": "🔍 **PORTFOLIO & WORK REVIEW!**\n\nHey {user_tag}! Apna video/design work review 
+      "reply": "🔍 **PORTFOLIO & WORK REVIEW!**\n\nHey {user_tag}! Apna video/design work review karwane ke liye:\n1. Goog
