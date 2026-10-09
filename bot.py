@@ -172,8 +172,6 @@ async def get_ai_response(user_text: str, user_name: str) -> str:
 # ==========================================
 # 7. VAULT & MASTER COMMAND HANDLERS
 # ==========================================
-PREFIXES = ["/", "¥"]
-
 async def master_menu_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
     user_tag = extract_user_tag(msg.from_user)
@@ -253,7 +251,8 @@ async def warn_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     target = reply.from_user
     target_tag = extract_user_tag(target)
-    reason = " ".join(context.args) if context.args else "Group rules violation"
+    raw_args = context.args if context.args else (msg.text.split()[1:] if msg.text else [])
+    reason = " ".join(raw_args) if raw_args else "Group rules violation"
     
     await msg.reply_text(
         f"⚠️ **Warning Issued!**\n\n"
@@ -274,7 +273,8 @@ async def mute_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     target = reply.from_user
     target_tag = extract_user_tag(target)
-    reason = " ".join(context.args) if context.args else "Spamming / Rules violation"
+    raw_args = context.args if context.args else (msg.text.split()[1:] if msg.text else [])
+    reason = " ".join(raw_args) if raw_args else "Spamming / Rules violation"
     
     until_date = datetime.now() + timedelta(hours=24)
     permissions = ChatPermissions(can_send_messages=False)
@@ -320,7 +320,8 @@ async def ban_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     target = reply.from_user
     target_tag = extract_user_tag(target)
-    reason = " ".join(context.args) if context.args else "Strict violation"
+    raw_args = context.args if context.args else (msg.text.split()[1:] if msg.text else [])
+    reason = " ".join(raw_args) if raw_args else "Strict violation"
     until_date = datetime.now() + timedelta(days=7)
 
     try:
@@ -358,7 +359,8 @@ async def kick_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     target = reply.from_user
     target_tag = extract_user_tag(target)
-    reason = " ".join(context.args) if context.args else "Kicked by Admin"
+    raw_args = context.args if context.args else (msg.text.split()[1:] if msg.text else [])
+    reason = " ".join(raw_args) if raw_args else "Kicked by Admin"
 
     try:
         await context.bot.ban_chat_member(msg.chat_id, target.id, until_date=datetime.now() + timedelta(days=7))
@@ -401,7 +403,8 @@ async def add_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
             file_id = reply_to.audio.file_id
             file_type = "audio"
 
-    text = " ".join(context.args)
+    raw_args = context.args if context.args else (msg.text.split()[1:] if msg.text else [])
+    text = " ".join(raw_args)
     if "|" not in text and not file_id:
         help_text = (
             "❌ **Invalid Format!**\n\n"
@@ -470,7 +473,8 @@ async def remove_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await msg.reply_text("⛔ **Access Denied!**")
         return
 
-    target_kw = " ".join(context.args).strip().lower()
+    raw_args = context.args if context.args else (msg.text.split()[1:] if msg.text else [])
+    target_kw = " ".join(raw_args).strip().lower()
     if not target_kw:
         await msg.reply_text("❌ Usage: `/removefilter <keyword>`", parse_mode="Markdown")
         return
@@ -497,7 +501,8 @@ async def toggle_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await msg.reply_text("⛔ **Access Denied!**")
         return
 
-    target_kw = " ".join(context.args).strip().lower()
+    raw_args = context.args if context.args else (msg.text.split()[1:] if msg.text else [])
+    target_kw = " ".join(raw_args).strip().lower()
     if not target_kw:
         await msg.reply_text("❌ Usage: `/togglefilter <keyword>`", parse_mode="Markdown")
         return
@@ -662,29 +667,31 @@ def main():
 
     application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     
+    # 📌 Master Menu (Direct '¥')
     application.add_handler(MessageHandler(filters.Regex(r'^¥$'), master_menu_cmd))
     
-    application.add_handler(CommandHandler("welcome", welcome_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("help", help_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("support", support_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("material", material_cmd, prefixes=PREFIXES))
+    # 📌 Vault Commands (Handles both '/' and '¥')
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥]welcome(?:\s+|$)'), welcome_cmd))
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥]help(?:\s+|$)'), help_cmd))
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥]support(?:\s+|$)'), support_cmd))
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥]material(?:\s+|$)'), material_cmd))
 
-    application.add_handler(CommandHandler("warn", warn_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("mute", mute_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("silent", mute_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("unmute", unmute_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("unsilent", unmute_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("ban", ban_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("tban", ban_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("unban", unban_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("kick", kick_cmd, prefixes=PREFIXES))
+    # 📌 Moderation Commands (Handles both '/' and '¥')
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥]warn(?:\s+|$)'), warn_cmd))
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥](mute|silent)(?:\s+|$)'), mute_cmd))
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥](unmute|unsilent)(?:\s+|$)'), unmute_cmd))
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥](ban|tban)(?:\s+|$)'), ban_cmd))
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥]unban(?:\s+|$)'), unban_cmd))
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥]kick(?:\s+|$)'), kick_cmd))
 
-    application.add_handler(CommandHandler("addfilter", add_filter_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("removefilter", remove_filter_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("togglefilter", toggle_filter_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("listfilters", list_filters_cmd, prefixes=PREFIXES))
-    application.add_handler(CommandHandler("clearfilters", clear_filters_cmd, prefixes=PREFIXES))
+    # 📌 Filter Management Commands (Handles both '/' and '¥')
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥]addfilter(?:\s+|$)'), add_filter_cmd))
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥]removefilter(?:\s+|$)'), remove_filter_cmd))
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥]togglefilter(?:\s+|$)'), toggle_filter_cmd))
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥]listfilters(?:\s+|$)'), list_filters_cmd))
+    application.add_handler(MessageHandler(filters.Regex(r'^[/\¥]clearfilters(?:\s+|$)'), clear_filters_cmd))
 
+    # 📌 Non-command Message Event Handler
     all_group_messages_filter = ~filters.COMMAND & ~filters.StatusUpdate.ALL
     application.add_handler(MessageHandler(all_group_messages_filter, handle_message))
 
@@ -693,3 +700,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
