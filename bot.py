@@ -1,7 +1,3 @@
-# ==============================================================
-# SABKRAFTTECH PRO AI BOT - FINAL COMPLETE SOURCE CODE
-# ==============================================================
-
 import json
 import os
 import re
@@ -61,7 +57,6 @@ def run_flask():
 # 3. BOT CONFIG & DEFAULT BUTTON LAYOUTS
 # ==========================================
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-# Admin ID set karein (Environment Variable ya direct ID)
 ADMIN_ID = int(os.environ.get("ADMIN_ID", "1391169804")) 
 
 OFFICIAL_BUTTONS = InlineKeyboardMarkup([
@@ -92,7 +87,7 @@ def extract_user_tag(user) -> str:
     return f"[{full_name}](tg://user?id={user.id})"
 
 # ==========================================
-# 5. DYNAMIC JSON FILTER MANAGEMENT
+# 5. FIXED DYNAMIC JSON FILTER MANAGEMENT
 # ==========================================
 FILTERS_FILE = "filters.json"
 
@@ -121,8 +116,7 @@ def match_keyword_smart(kw: str, text: str) -> bool:
     kw = kw.lower().strip()
     if not kw:
         return False
-    if " " in kw:
-        return kw in text
+    # Exact word boundary matching taaki overlap ya partial clash na ho
     pattern = r'(?<!\w)' + re.escape(kw) + r'(?!\w)'
     return bool(re.search(pattern, text))
 
@@ -289,7 +283,6 @@ async def kick_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await msg.reply_text(f"❌ Action failed: {e}")
 
-
 # ==========================================
 # 8. MASTER MENU & QUICK COMMANDS
 # ==========================================
@@ -338,9 +331,8 @@ async def material_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     target_user = get_target_user(msg)
     user_tag = extract_user_tag(target_user)
     await msg.reply_text(f"🎬 Material Vault: {user_tag}, in keywords ka use karein: `overlays`, `effects`, `png`, `apng`. ⚡", reply_markup=MATERIAL_BUTTONS, parse_mode="Markdown")
-
 # ==========================================
-# 9. FILTER MANAGEMENT (WITH EXACT SPACING & MEDIA)
+# 9. FILTER MANAGEMENT (FIXED OVERWRITE LOGIC)
 # ==========================================
 async def add_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
@@ -364,7 +356,7 @@ async def add_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     parts_cmd = text_content.split(maxsplit=1)
     
     if len(parts_cmd) < 2 and not reply_to:
-        await msg.reply_text("❌ **Usage:** `¥addfilter keyword1, keyword2 | Line 1 text\nLine 2 exact spacing | official`", parse_mode="Markdown")
+        await msg.reply_text("❌ **Usage:** `¥addfilter keyword1, keyword2 | Line 1 text | official`", parse_mode="Markdown")
         return
 
     query_body = parts_cmd[1] if len(parts_cmd) > 1 else ""
@@ -379,32 +371,20 @@ async def add_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         button_type = "none"
 
     filters_list = load_filters()
-    updated = False
     
-    for f_item in filters_list:
-        existing_kws = [k.lower() for k in f_item.get("keywords", [])]
-        if any(k in existing_kws for k in keywords):
-            f_item["reply"] = reply_content
-            f_item["button_type"] = button_type
-            f_item["file_id"] = file_id
-            f_item["file_type"] = file_type
-            f_item["active"] = True
-            updated = True
-            break
-
-    if not updated:
-        filters_list.append({
-            "keywords": keywords,
-            "reply": reply_content,
-            "button_type": button_type,
-            "file_id": file_id,
-            "file_type": file_type,
-            "active": True
-        })
+    # Naya filter hamesha alag entry ke roop mein append hoga, purane filters over-write nahi honge
+    filters_list.append({
+        "keywords": keywords,
+        "reply": reply_content,
+        "button_type": button_type,
+        "file_id": file_id,
+        "file_type": file_type,
+        "active": True
+    })
 
     if save_filters(filters_list):
         media_status = f"\n📎 **Attached Media:** {file_type.capitalize()}" if file_id else ""
-        await msg.reply_text(f"✅ **Filter Saved with Exact Spacing!**\n\n🔑 **Keywords:** `{', '.join(keywords)}`\n💬 **Reply:**\n{reply_content}{media_status}", parse_mode="Markdown")
+        await msg.reply_text(f"✅ **New Filter Added Successfully!**\n\n🔑 **Keywords:** `{', '.join(keywords)}`\n💬 **Reply:**\n{reply_content}{media_status}", parse_mode="Markdown")
     else:
         await msg.reply_text("❌ Error saving filter.")
 
