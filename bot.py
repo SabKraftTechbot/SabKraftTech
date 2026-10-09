@@ -60,7 +60,6 @@ def run_flask():
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", "1391169804"))
 
-# Line-by-line stacking layout for official buttons
 OFFICIAL_BUTTONS = InlineKeyboardMarkup([
     [InlineKeyboardButton("📢 Telegram Channel", url="https://t.me/SabKraftTech")],
     [InlineKeyboardButton("👥 Telegram Group", url="https://t.me/TeamSabKraftTech")],
@@ -72,9 +71,7 @@ MATERIAL_BUTTONS = InlineKeyboardMarkup([
     [InlineKeyboardButton("📦 Explore Materials & APKs in Channel", url="https://t.me/SabKraftTech")]
 ])
 
-# Custom Line-by-line Button Parser
 def parse_custom_buttons(button_data_list):
-    """Parses line-by-line custom buttons if passed as a list of dicts [{'text': '...', 'url': '...'}]"""
     if not button_data_list:
         return None
     keyboard = []
@@ -84,10 +81,9 @@ def parse_custom_buttons(button_data_list):
     return InlineKeyboardMarkup(keyboard) if keyboard else None
 
 # ==========================================
-# 4. SMART USER TAGGING HELPER (FULL NAME FALLBACK)
+# 4. SMART USER TAGGING HELPER
 # ==========================================
 def extract_user_tag(user) -> str:
-    """Extracts @username or Full Profile Name (First + Last) if username is missing."""
     if not user:
         return "Creator"
     if user.username:
@@ -135,7 +131,6 @@ def find_matching_filter(text_lower: str):
     for item in filters_list:
         if not item.get("active", True):
             continue
-
         keywords = item.get("keywords", [])
         for kw in keywords:
             if match_keyword_smart(kw, text_lower):
@@ -234,7 +229,6 @@ async def check_admin_privileges(update: Update, context: ContextTypes.DEFAULT_T
     return member.status in ["creator", "administrator"]
 
 async def notify_user_punishment(context: ContextTypes.DEFAULT_TYPE, target_user, action_name: str, duration_str: str, reason: str, chat_title: str):
-    """Attempts PM notification first; falls back gracefully if user hasn't started bot in PM."""
     dm_text = (
         f"⚠️ **SabKraftTech Security Alert:**\n\n"
         f"Aapko **{chat_title}** mein **{action_name}** kiya gaya hai.\n"
@@ -373,8 +367,7 @@ async def kick_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await msg.reply_text(f"🦶 {target_tag} ko group se kick kar diya gaya hai.\n📝 **Reason:** {reason}", parse_mode="Markdown")
     except Exception as e:
         await msg.reply_text(f"❌ Action failed: {e}")
-
-# ==========================================
+    # ==========================================
 # 9. DYNAMIC FILTER ADMIN MANAGEMENT
 # ==========================================
 def is_admin(user_id: int) -> bool:
@@ -498,4 +491,205 @@ async def remove_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def toggle_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.effective_message
-    user_id = update.effective_user.id 
+    user_id = update.effective_user.id if update.effective_user else 0
+
+    if not is_admin(user_id):
+        await msg.reply_text("⛔ **Access Denied!**")
+        return
+
+    target_kw = " ".join(context.args).strip().lower()
+    if not target_kw:
+        await msg.reply_text("❌ Usage: `/togglefilter <keyword>`", parse_mode="Markdown")
+        return
+
+    filters_list = load_filters()
+    found = False
+    new_status_str = ""
+
+    for f_item in filters_list:
+        kws = [k.lower() for k in f_item.get("keywords", [])]
+        if target_kw in kws:
+            current_active = f_item.get("active", True)
+            f_item["active"] = not current_active
+            found = True
+            new_status_str = "🟢 Active (Resumed)" if f_item["active"] else "🔴 Paused (Disabled)"
+            break
+
+    if found:
+        save_filters(filters_list)
+        await msg.reply_text(f"⚙️ Filter `{target_kw}` status updated: **{new_status_str}**", parse_mode="Markdown")
+    else:
+        await msg.reply_text(f"⚠️ `{target_kw}` keyword se koi filter nahi mil paaya.", parse_mode="Markdown")
+
+async def list_filters_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.effective_message
+    user_id = update.effective_user.id if update.effective_user else 0
+
+    if not is_admin(user_id):
+        await msg.reply_text("⛔ **Access Denied!**")
+        return
+
+    filters_list = load_filters()
+    if not filters_list:
+        await msg.reply_text("📁 Currently koi filter configured nahi hai.")
+        return
+
+    out = "📋 **SabKraftTech Configured Filters:**\n\n"
+    for idx, f_item in enumerate(filters_list, 1):
+        status = "🟢" if f_item.get("active", True) else "🔴"
+        kws = ", ".join(f_item.get("keywords", []))
+        btn = f_item.get("button_type", "none")
+        has_file = "📦 FILE" if f_item.get("file_id") else "📝 TEXT"
+        out += f"{idx}. {status} [{has_file}] `{kws}` | Button: `{btn}`\n"
+
+    await msg.reply_text(out, parse_mode="Markdown")
+
+async def clear_filters_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.effective_message
+    user_id = update.effective_user.id if update.effective_user else 0
+
+    if not is_admin(user_id):
+        await msg.reply_text("⛔ **Access Denied!**")
+        return
+
+    if save_filters([]):
+        await msg.reply_text("🗑️ Saare custom filters successfully clear kar diye gaye!")
+
+# ==========================================
+# 10. AUTO-DELETE HELPER (300 SECONDS / 5 MINS)
+# ==========================================
+async def delete_message_after_delay(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message_id: int, delay: int = 300):
+    await asyncio.sleep(delay)
+    try:
+        await context.bot.delete_message(chat_id=chat_id, message_id=message_id)
+    except Exception:
+        pass
+
+# ==========================================
+# 11. CORE MESSAGE HANDLER
+# ==========================================
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.effective_message
+    if not msg:
+        return
+
+    chat = msg.chat
+    chat_type = chat.type
+    is_group = chat_type in ["group", "supergroup"]
+
+    if getattr(msg, "is_automatic_forward", False) or getattr(msg, "forward_origin", None) or getattr(msg, "forward_from_chat", None):
+        return
+
+    if msg.sender_chat and msg.sender_chat.id != chat.id:
+        return
+
+    if msg.from_user and msg.from_user.is_bot:
+        return
+
+    user_text = msg.text or msg.caption or ""
+    if not user_text.strip():
+        return
+
+    user_text_clean = user_text.strip()
+    lower_text = user_text_clean.lower()
+    user_tag = extract_user_tag(msg.from_user)
+    user_name = msg.from_user.first_name if msg.from_user else "Creator"
+
+    if is_group and re.search(r"http[s]?://|t\.me/|telegram\.me/", user_text_clean):
+        if "t.me/sabkrafttech" not in lower_text and "t.me/teamsabkrafttech" not in lower_text:
+            try:
+                await msg.delete()
+                return
+            except Exception:
+                pass
+
+    matched_filter = find_matching_filter(lower_text)
+    sent_message = None
+
+    if matched_filter:
+        raw_reply = matched_filter.get("reply", "")
+        reply_text = raw_reply.replace("{user_tag}", user_tag).replace("{username}", user_tag)
+        btn_type = matched_filter.get("button_type", "none")
+        
+        file_id = matched_filter.get("file_id")
+        file_type = matched_filter.get("file_type")
+
+        markup = None
+        if btn_type == "official":
+            markup = OFFICIAL_BUTTONS
+        elif btn_type == "material":
+            markup = MATERIAL_BUTTONS
+        elif isinstance(matched_filter.get("custom_buttons"), list):
+            markup = parse_custom_buttons(matched_filter.get("custom_buttons"))
+
+        if file_id:
+            try:
+                if file_type == "document":
+                    sent_message = await msg.reply_document(document=file_id, caption=reply_text, reply_markup=markup, parse_mode="Markdown")
+                elif file_type == "photo":
+                    sent_message = await msg.reply_photo(photo=file_id, caption=reply_text, reply_markup=markup, parse_mode="Markdown")
+                elif file_type == "video":
+                    sent_message = await msg.reply_video(video=file_id, caption=reply_text, reply_markup=markup, parse_mode="Markdown")
+            except Exception as e:
+                logging.warning(f"Media send fallback: {e}")
+                sent_message = await msg.reply_text(reply_text, reply_markup=markup)
+        else:
+            try:
+                sent_message = await msg.reply_text(reply_text, reply_markup=markup, parse_mode="Markdown")
+            except Exception:
+                sent_message = await msg.reply_text(reply_text, reply_markup=markup)
+    else:
+        reply_text = await get_ai_response(user_text_clean, user_name)
+        try:
+            sent_message = await msg.reply_text(reply_text, parse_mode="Markdown")
+        except Exception:
+            sent_message = await msg.reply_text(reply_text)
+
+    if sent_message and is_group:
+        asyncio.create_task(
+            delete_message_after_delay(context, msg.chat_id, sent_message.message_id, 300)
+        )
+
+# ==========================================
+# 12. APP STARTUP & HANDLER REGISTRATION
+# ==========================================
+def main():
+    threading.Thread(target=run_flask, daemon=True).start()
+
+    if not TELEGRAM_TOKEN:
+        logging.error("❌ TELEGRAM_TOKEN environment variable missing!")
+        return
+
+    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
+    
+    application.add_handler(MessageHandler(filters.Regex(r'^¥$'), master_menu_cmd))
+    
+    application.add_handler(CommandHandler("welcome", welcome_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("help", help_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("support", support_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("material", material_cmd, prefixes=PREFIXES))
+
+    application.add_handler(CommandHandler("warn", warn_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("mute", mute_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("silent", mute_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("unmute", unmute_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("unsilent", unmute_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("ban", ban_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("tban", ban_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("unban", unban_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("kick", kick_cmd, prefixes=PREFIXES))
+
+    application.add_handler(CommandHandler("addfilter", add_filter_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("removefilter", remove_filter_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("togglefilter", toggle_filter_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("listfilters", list_filters_cmd, prefixes=PREFIXES))
+    application.add_handler(CommandHandler("clearfilters", clear_filters_cmd, prefixes=PREFIXES))
+
+    all_group_messages_filter = ~filters.COMMAND & ~filters.StatusUpdate.ALL
+    application.add_handler(MessageHandler(all_group_messages_filter, handle_message))
+
+    logging.info("🚀 SabKraftTech Pro AI Bot Running with Master Vault & Moderation Controls...")
+    application.run_polling(drop_pending_updates=True)
+
+if __name__ == "__main__":
+    main()
