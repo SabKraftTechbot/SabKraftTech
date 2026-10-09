@@ -1,402 +1,576 @@
-# ==============================================================================
-# ENTERPRISE-GRADE 20-SECTION TELEGRAM SUPERGROUP MANAGEMENT BOT (ROSE/GROUPHELP STYLE)
-# Stack: Python (pyTelegramBotAPI), Flask (24/7 Health Check), JSON Storage, Gemini AI
-# ==============================================================================
+# ==============================================================
+# SABKRAFTTECH PRO AI BOT - FINAL COMPLETE SOURCE CODE
+# ==============================================================
 
-import os
 import json
+import os
+import re
+import asyncio
+import logging
 import threading
+from datetime import datetime, timedelta
 from flask import Flask
-import telebot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-import google.generativeai as genai
 
-# ==============================================================================
-# SECTION 1: CORE FLASK HEALTH-CHECK SERVER & MULTI-THREADING RUNNER
-# ==============================================================================
-app = Flask(__name__)
+from telegram import (
+    InlineKeyboardButton, 
+    InlineKeyboardMarkup, 
+    Update, 
+    ChatPermissions
+)
+from telegram.ext import (
+    ApplicationBuilder,
+    ContextTypes,
+    MessageHandler,
+    filters,
+)
 
-@app.route('/')
-def health_check():
-    return "Enterprise Bot is active and running 24/7!", 200
-
-def run_flask():
-    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 8080)))
-
-# ==============================================================================
-# SECTION 2: JSON DATABASE STORAGE & CONFIGURATION MANAGERS
-# ==============================================================================
-CONFIG_FILE = "config.json"
-FILTERS_FILE = "filters.json"
-WARNINGS_FILE = "warnings.json"
-NOTES_FILE = "notes.json"
-
-def load_json(filename):
-    if not os.path.exists(filename):
-        return {}
-    with open(filename, 'r', encoding='utf-8') as f:
-        try:
-            return json.load(f)
-        except:
-            return {}
-
-def save_json(filename, data):
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
-
-# Initialize Defaults
-config = load_json(CONFIG_FILE)
-if "settings" not in config:
-    config["settings"] = {
-        "captcha": True,
-        "welcome": True,
-        "welcome_msg": "👋 Welcome {mention} to {title}! Please read the rules.",
-        "gm_msg": "☀️ Good Morning everyone! Have a blessed and productive day.",
-        "ge_msg": "🌆 Good Evening! Hope your day went great.",
-        "gn_msg": "🌙 Good Night! Sweet dreams and take care.",
-        "rules": "📜 **Default Group Rules:**\n1. Respect all members.\n2. No spam or unapproved links.\n3. Keep conversations clean.",
-        "antispam": True
-    }
-    save_json(CONFIG_FILE, config)
-
-# ==============================================================================
-# SECTION 3: GEMINI AI MULTI-LANGUAGE FALLBACK ENGINE
-# ==============================================================================
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY")
-if GEMINI_API_KEY != "YOUR_GEMINI_API_KEY":
-    genai.configure(api_key=GEMINI_API_KEY)
-    ai_model = genai.GenerativeModel('gemini-1.5-flash')
-else:
+# ==========================================
+# 1. GEMINI AI INTEGRATION
+# ==========================================
+try:
+    import google.generativeai as genai
+    GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
+    if GEMINI_KEY:
+        genai.configure(api_key=GEMINI_KEY)
+        ai_model = genai.GenerativeModel("gemini-1.5-flash")
+    else:
+        ai_model = None
+except Exception as e:
+    logging.error(f"Gemini Config Error: {e}")
     ai_model = None
 
-def get_gemini_response(prompt):
-    if not ai_model:
-        return "⚠️ AI fallback is currently disabled (API key missing)."
+# ==========================================
+# 2. LOGGING & FLASK HEALTH CHECK
+# ==========================================
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
+)
+
+app = Flask(__name__)
+
+@app.route("/")
+def health():
+    return "SabKraftTech Pro Editor AI Engine Online 24/7!", 200
+
+def run_flask():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port, use_reloader=False)
+
+# ==========================================
+# 3. BOT CONFIG & DEFAULT BUTTON LAYOUTS
+# ==========================================
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+# Admin ID set karein (Environment Variable ya direct ID)
+ADMIN_ID = int(os.environ.get("ADMIN_ID", "1391169804")) 
+
+OFFICIAL_BUTTONS = InlineKeyboardMarkup([
+    [InlineKeyboardButton("📢 Telegram Channel", url="https://t.me/SabKraftTech")],
+    [InlineKeyboardButton("👥 Telegram Group", url="https://t.me/TeamSabKraftTech")],
+    [InlineKeyboardButton("▶️ YouTube Channel", url="https://youtube.com/@sabkrafttech?si=BvFSMTysyXScxEj2")],
+    [InlineKeyboardButton("📸 Instagram ID", url="https://instagram.com/sabkrafttech")]
+])
+
+MATERIAL_BUTTONS = InlineKeyboardMarkup([
+    [InlineKeyboardButton("📦 Explore Materials & APKs in Channel", url="https://t.me/SabKraftTech")]
+])
+
+# ==========================================
+# 4. SMART USER TAGGING & TARGETING HELPER
+# ==========================================
+def get_target_user(msg):
+    if msg.reply_to_message and msg.reply_to_message.from_user:
+        return msg.reply_to_message.from_user
+    return msg.from_user
+
+def extract_user_tag(user) -> str:
+    if not user:
+        return "User"
+    if user.username:
+        return f"@{user.username}"
+    full_name = f"{user.first_name} {user.last_name}".strip() if user.last_name else user.first_name
+    return f"[{full_name}](tg://user?id={user.id})"
+
+# ==========================================
+# 5. DYNAMIC JSON FILTER MANAGEMENT
+# ==========================================
+FILTERS_FILE = "filters.json"
+
+def load_filters():
+    if os.path.exists(FILTERS_FILE):
+        try:
+            with open(FILTERS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return data.get("filters", [])
+        except Exception as e:
+            logging.error(f"Error reading {FILTERS_FILE}: {e}")
+            return []
+    return []
+
+def save_filters(filters_list):
     try:
-        response = ai_model.generate_content(
-            f"Respond to the following query in the exact same language/script it was written in (English, Urdu, Hinglish, or Devanagari Hindi). Query: {prompt}"
-        )
-        return response.text
+        data = {"filters": filters_list}
+        with open(FILTERS_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        return True
     except Exception as e:
-        return f"❌ Error generating AI response: {str(e)}"
-
-# ==============================================================================
-# SECTION 4: TELEBOT CLIENT & ADMIN VERIFICATION WRAPPER
-# ==============================================================================
-TOKEN = os.environ.get("BOT_TOKEN", "YOUR_BOT_TOKEN")
-bot = telebot.TeleBot(TOKEN, parse_mode=None)
-
-def is_admin(chat_id, user_id):
-    try:
-        member = bot.get_chat_member(chat_id, user_id)
-        return member.status in ['creator', 'administrator']
-    except:
+        logging.error(f"Error saving {FILTERS_FILE}: {e}")
         return False
 
-# ==============================================================================
-# SECTIONS 5-20: ADVANCED MODULES & COMMAND ROUTERS
-# ==============================================================================
+def match_keyword_smart(kw: str, text: str) -> bool:
+    kw = kw.lower().strip()
+    if not kw:
+        return False
+    if " " in kw:
+        return kw in text
+    pattern = r'(?<!\w)' + re.escape(kw) + r'(?!\w)'
+    return bool(re.search(pattern, text))
 
-# Section 5: Master Vault Menu ('¥')
-@bot.message_handler(func=lambda msg: msg.text and msg.text.strip() == '¥')
-def master_vault_menu(message):
-    menu_text = (
-        "✨ **Master Vault & 20-Section Command Suite** ✨\n\n"
-        "🛡 **1. Moderation:** `¥warn`, `¥unwarn`, `¥mute`, `¥unmute`, `¥kick`, `¥ban`, `¥unban`\n"
-        "🧹 **2. Purge & Clean:** `¥purge` (reply to message)\n"
-        "🔒 **3. Captcha Control:** `¥captcha on/off`\n"
-        "👋 **4. Welcome & Goodbye:** `¥welcome on/off`, `¥setwelcome <text>`\n"
-        "☀️ **5. Time Greetings:** `¥setgm`, `¥setge`, `¥setgn`\n"
-        "📜 **6. Rules Management:** `¥setrules`, `¥rules`\n"
-        "📂 **7. Notes Module:** `¥setnote <name> | <text>`, `¥getnote <name>`\n"
-        "🔗 **8. Dynamic Filters & Universal Buttons:** `¥addfilter`, `¥delfilter`, `¥filters`\n\n"
-        "Type any command with **¥** prefix to execute."
+def find_matching_filter(text_lower: str):
+    filters_list = load_filters()
+    for item in filters_list:
+        if not item.get("active", True):
+            continue
+        keywords = item.get("keywords", [])
+        for kw in keywords:
+            if match_keyword_smart(kw, text_lower):
+                return item
+    return None
+
+# ==========================================
+# 6. SELECTIVE TRANSLATION & AI FALLBACK
+# ==========================================
+async def get_ai_response(user_text: str, user_name: str) -> str:
+    if not ai_model:
+        return f"✨ **Hey {user_name}!** SabKraftTech Editor Community mein aapka swagat hai. Aaj konse project ya editing asset mein support chahiye?"
+
+    system_prompt = f"""
+    You are 'SabKraftTech AI' — an expert Mobile Video Editor, Graphic Designer, Cinematic Documentary Creator, and Freelance Creator Assistant.
+
+    CORE BEHAVIOR RULES:
+    1. USER CONTEXT: Speaking with '{user_name}'.
+    2. VOICE & TONE: Professional, warm, highly encouraging, and helpful.
+    3. LANGUAGE & TRANSLATION:
+       - Respond directly and concisely to the query.
+       - IF the user asks in English, Urdu, or Devnagri Hindi with a multi-word or complex query, generate the main response AND append a distinct line at the bottom with premium emojis containing the Hinglish (Roman Hindi) translation/summary:
+         "✨ **Hinglish:** <translation in Roman Hindi>"
+       - If the user uses standard greetings, reply with authentic respectful greetings directly.
+    4. FORMATTING: Clean line breaks, bullet points, short (2-3 lines max).
+
+    Member Message: "{user_text}"
+    Give a natural, aesthetic reply:
+    """
+
+    try:
+        loop = asyncio.get_running_loop()
+        response = await loop.run_in_executor(None, lambda: ai_model.generate_content(system_prompt))
+        return response.text.strip()
+    except Exception as e:
+        logging.error(f"Gemini AI Exception: {e}")
+        return f"✨ **Hey {user_name}!**\n\nSabKraftTech community mein aapka swagat hai! Bataiye aaj konse editing asset ya query mein help chahiye?"
+    # ==========================================
+# 7. ADVANCED ADMIN MODERATION SUITE
+# ==========================================
+async def check_admin_privileges(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
+    chat = update.effective_chat
+    user = update.effective_user
+    if chat.type == "private":
+        return True
+    if user.id == ADMIN_ID:
+        return True
+    try:
+        member = await context.bot.get_chat_member(chat.id, user.id)
+        return member.status in ["creator", "administrator"]
+    except Exception:
+        return False
+
+async def notify_user_punishment(context: ContextTypes.DEFAULT_TYPE, target_user, action_name: str, duration_str: str, reason: str, chat_title: str):
+    if not hasattr(target_user, "id"):
+        return False
+    dm_text = (
+        f"⚠️ **SabKraftTech Security Alert:**\n\n"
+        f"Aapko **{chat_title}** mein **{action_name}** kiya gaya hai.\n"
+        f"⏱️ **Duration:** {duration_str}\n"
+        f"📝 **Reason:** {reason}\n\n"
+        f"Time period khatam hone par aap dubara group join kar sakte hain."
     )
-    bot.reply_to(message, menu_text, parse_mode="Markdown")
-
-# Section 6: Target Action Parser (Reply or @username tagging with automatic pings)
-@bot.message_handler(func=lambda msg: msg.text and msg.text.startswith(('¥warn', '¥unwarn', '¥mute', '¥unmute', '¥ban', '¥kick', '¥unban')))
-def handle_moderation(message):
-    if not is_admin(message.chat.id, message.from_user.id):
-        bot.reply_to(message, "❌ Yeh command sirf Admins use kar sakte hain!")
-        return
-
-    parts = message.text.split(maxsplit=1)
-    cmd = parts[0].lower()
-    
-    target_user = None
-    target_name = "User"
-    
-    if message.reply_to_message:
-        target_user = message.reply_to_message.from_user
-        target_name = f"[{target_user.first_name}](tg://user?id={target_user.id})"
-    elif len(parts) > 1 and parts[1].startswith('@'):
-        target_name = parts[1]
-
-    if not target_user and len(parts) == 1 and not message.reply_to_message:
-        bot.reply_to(message, "⚠️ Kripya kisi ke message par reply karein ya `@username` dein.")
-        return
-
-    chat_id = message.chat.id
-    if cmd == '¥warn':
-        uid = str(target_user.id) if target_user else target_name
-        warnings = load_json(WARNINGS_FILE)
-        warnings[uid] = warnings.get(uid, 0) + 1
-        save_json(WARNINGS_FILE, warnings)
-        bot.reply_to(message, f"⚠️ Warning issued to {target_name}! Total warnings: {warnings[uid]}", parse_mode="Markdown")
-    elif cmd == '¥unwarn':
-        uid = str(target_user.id) if target_user else target_name
-        warnings = load_json(WARNINGS_FILE)
-        if uid in warnings and warnings[uid] > 0:
-            warnings[uid] -= 1
-            save_json(WARNINGS_FILE, warnings)
-        bot.reply_to(message, f"✅ Warning removed for {target_name}!", parse_mode="Markdown")
-    elif cmd == '¥mute':
-        bot.reply_to(message, f"🔇 Muted {target_name} successfully.", parse_mode="Markdown")
-    elif cmd == '¥unmute':
-        bot.reply_to(message, f"🔊 Unmuted {target_name} successfully.", parse_mode="Markdown")
-    elif cmd == '¥ban':
-        bot.reply_to(message, f"🔨 Banned {target_name} from the group.", parse_mode="Markdown")
-    elif cmd == '¥unban':
-        bot.reply_to(message, f"🔓 Unbanned {target_name} successfully.", parse_mode="Markdown")
-    elif cmd == '¥kick':
-        bot.reply_to(message, f"👢 Kicked {target_name} out.", parse_mode="Markdown")
-
-# Section 7: Purge Module
-@bot.message_handler(func=lambda msg: msg.text and msg.text.startswith('¥purge'))
-def purge_messages(message):
-    if not is_admin(message.chat.id, message.from_user.id):
-        bot.reply_to(message, "❌ Sirf Admins messages purge kar sakte hain!")
-        return
-    if not message.reply_to_message:
-        bot.reply_to(message, "⚠️ Purge karne ke liye kisi message par reply karein.")
-        return
     try:
-        start_id = message.reply_to_message.message_id
-        end_id = message.message_id
-        for msg_id in range(start_id, end_id + 1):
+        await context.bot.send_message(chat_id=target_user.id, text=dm_text, parse_mode="Markdown")
+        return True
+    except Exception:
+        return False
+
+async def warn_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await check_admin_privileges(update, context):
+        return
+    msg = update.effective_message
+    target = get_target_user(msg)
+    target_tag = extract_user_tag(target)
+    raw_args = context.args if context.args else (msg.text.split()[1:] if msg.text else [])
+    reason = " ".join(raw_args) if raw_args else "Group rules violation"
+    await msg.reply_text(f"⚠️ **Warning Issued!**\n\n👤 **Target User:** {target_tag}\n📝 **Reason:** {reason}\n🚨 Kripya rules follow karein!", parse_mode="Markdown")
+
+async def mute_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await check_admin_privileges(update, context):
+        return
+    msg = update.effective_message
+    target = get_target_user(msg)
+    target_tag = extract_user_tag(target)
+    raw_args = context.args if context.args else (msg.text.split()[1:] if msg.text else [])
+    reason = " ".join(raw_args) if raw_args else "Spamming / Rules violation"
+    until_date = datetime.now() + timedelta(hours=24)
+    permissions = ChatPermissions(can_send_messages=False)
+    try:
+        if hasattr(target, "id"):
+            await context.bot.restrict_chat_member(msg.chat_id, target.id, permissions=permissions, until_date=until_date)
+            await notify_user_punishment(context, target, "Mute 🔕", "24 Hours", reason, msg.chat.title)
+        await msg.reply_text(f"🔕 {target_tag} ko **24 Hours** ke liye mute kar diya gaya hai.\n📝 **Reason:** {reason}", parse_mode="Markdown")
+    except Exception as e:
+        await msg.reply_text(f"❌ Action failed: {e}")
+
+async def unmute_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await check_admin_privileges(update, context):
+        return
+    msg = update.effective_message
+    target = get_target_user(msg)
+    target_tag = extract_user_tag(target)
+    permissions = ChatPermissions(can_send_messages=True, can_send_media_messages=True, can_send_other_messages=True, can_add_web_page_previews=True)
+    try:
+        if hasattr(target, "id"):
+            await context.bot.restrict_chat_member(msg.chat_id, target.id, permissions=permissions)
+        await msg.reply_text(f"🔔 {target_tag} ko unmute kar diya gaya hai!", parse_mode="Markdown")
+    except Exception as e:
+        await msg.reply_text(f"❌ Action failed: {e}")
+
+async def ban_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await check_admin_privileges(update, context):
+        return
+    msg = update.effective_message
+    target = get_target_user(msg)
+    target_tag = extract_user_tag(target)
+    raw_args = context.args if context.args else (msg.text.split()[1:] if msg.text else [])
+    reason = " ".join(raw_args) if raw_args else "Strict violation"
+    until_date = datetime.now() + timedelta(days=7)
+    try:
+        if hasattr(target, "id"):
+            await context.bot.ban_chat_member(msg.chat_id, target.id, until_date=until_date)
+            await notify_user_punishment(context, target, "Ban 🚫", "1 Week", reason, msg.chat.title)
+        await msg.reply_text(f"🚫 {target_tag} ko **1 Week** ke liye ban kar diya gaya hai.\n📝 **Reason:** {reason}", parse_mode="Markdown")
+    except Exception as e:
+        await msg.reply_text(f"❌ Action failed: {e}")
+
+async def unban_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await check_admin_privileges(update, context):
+        return
+    msg = update.effective_message
+    target = get_target_user(msg)
+    target_tag = extract_user_tag(target)
+    try:
+        if hasattr(target, "id"):
+            await context.bot.unban_chat_member(msg.chat_id, target.id, only_if_banned=True)
+        await msg.reply_text(f"✅ {target_tag} ko unban kar diya gaya hai!", parse_mode="Markdown")
+    except Exception as e:
+        await msg.reply_text(f"❌ Action failed: {e}")
+
+async def kick_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await check_admin_privileges(update, context):
+        return
+    msg = update.effective_message
+    target = get_target_user(msg)
+    target_tag = extract_user_tag(target)
+    raw_args = context.args if context.args else (msg.text.split()[1:] if msg.text else [])
+    reason = " ".join(raw_args) if raw_args else "Kicked by Admin"
+    try:
+        if hasattr(target, "id"):
+            await context.bot.ban_chat_member(msg.chat_id, target.id, until_date=datetime.now() + timedelta(days=1))
+            await context.bot.unban_chat_member(msg.chat_id, target.id, only_if_banned=True)
+            await notify_user_punishment(context, target, "Kick 🦶", "Temporary", reason, msg.chat.title)
+        await msg.reply_text(f"🦶 {target_tag} ko group se kick kar diya gaya hai.\n📝 **Reason:** {reason}", parse_mode="Markdown")
+    except Exception as e:
+        await msg.reply_text(f"❌ Action failed: {e}")
+
+
+# ==========================================
+# 8. MASTER MENU & QUICK COMMANDS
+# ==========================================
+async def master_menu_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.effective_message
+    target_user = get_target_user(msg)
+    user_tag = extract_user_tag(target_user)
+    menu_text = (
+        f"⚡ **SabKraftTech Master Vault & Menu**\n"
+        f"Suno {user_tag}, niche di gayi commands ka upyog karein:\n\n"
+        f"¥welcome - Welcome greeting\n"
+        f"¥help - Help & Support Center\n"
+        f"¥support - Direct Support Desk\n"
+        f"¥material - Editing Assets Vault\n\n"
+        f"📂 **Filter Management (Admin Only):**\n"
+        f"¥addfilter keyword | text | button\n"
+        f"¥removefilter keyword\n"
+        f"¥togglefilter keyword\n"
+        f"¥listfilters\n"
+        f"¥clearfilters\n\n"
+        f"🛡 **Moderation (Admin Only):**\n"
+        f"¥warn, ¥mute, ¥unmute, ¥kick, ¥ban, ¥unban"
+    )
+    await msg.reply_text(menu_text, parse_mode="Markdown")
+
+async def welcome_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.effective_message
+    target_user = get_target_user(msg)
+    user_tag = extract_user_tag(target_user)
+    await msg.reply_text(f"✨ Welcome {user_tag}! SabKraftTech mein swagat hai. Aaj kis par discussion karein? 🚀", parse_mode="Markdown")
+
+async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.effective_message
+    target_user = get_target_user(msg)
+    user_tag = extract_user_tag(target_user)
+    await msg.reply_text(f"🤝 Help & Support Desk: Pareshan mat ho {user_tag}, main yahan aapki har problem solve karne ke liye hoon! ⚡", parse_mode="Markdown")
+
+async def support_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.effective_message
+    target_user = get_target_user(msg)
+    user_tag = extract_user_tag(target_user)
+    await msg.reply_text(f"🤝 Support Desk: {user_tag}, apni query yahan drop karein, humari team turant assist karegi! ⚡", parse_mode="Markdown")
+
+async def material_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.effective_message
+    target_user = get_target_user(msg)
+    user_tag = extract_user_tag(target_user)
+    await msg.reply_text(f"🎬 Material Vault: {user_tag}, in keywords ka use karein: `overlays`, `effects`, `png`, `apng`. ⚡", reply_markup=MATERIAL_BUTTONS, parse_mode="Markdown")
+
+# ==========================================
+# 9. FILTER MANAGEMENT (WITH EXACT SPACING & MEDIA)
+# ==========================================
+async def add_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.effective_message
+    if not await check_admin_privileges(update, context):
+        await msg.reply_text("⛔ **Access Denied:** Sirf Admin hi filters add kar sakta hai!")
+        return
+
+    reply_to = msg.reply_to_message
+    file_id = None
+    file_type = None
+
+    if reply_to:
+        if reply_to.document: 
+            file_id, file_type = reply_to.document.file_id, "document"
+        elif reply_to.photo: 
+            file_id, file_type = reply_to.photo[-1].file_id, "photo"
+        elif reply_to.video: 
+            file_id, file_type = reply_to.video.file_id, "video"
+
+    text_content = msg.text or msg.caption or ""
+    parts_cmd = text_content.split(maxsplit=1)
+    
+    if len(parts_cmd) < 2 and not reply_to:
+        await msg.reply_text("❌ **Usage:** `¥addfilter keyword1, keyword2 | Line 1 text\nLine 2 exact spacing | official`", parse_mode="Markdown")
+        return
+
+    query_body = parts_cmd[1] if len(parts_cmd) > 1 else ""
+    parts = query_body.split("|")
+    
+    raw_keywords = parts[0].strip().lower().split(",")
+    keywords = [k.strip() for k in raw_keywords if k.strip()]
+    
+    reply_content = parts[1].strip().replace("\\n", "\n") if len(parts) > 1 else (reply_to.caption if reply_to and reply_to.caption else "")
+    button_type = parts[2].strip().lower() if len(parts) > 2 else "none"
+    if button_type not in ["official", "material", "none"]:
+        button_type = "none"
+
+    filters_list = load_filters()
+    updated = False
+    
+    for f_item in filters_list:
+        existing_kws = [k.lower() for k in f_item.get("keywords", [])]
+        if any(k in existing_kws for k in keywords):
+            f_item["reply"] = reply_content
+            f_item["button_type"] = button_type
+            f_item["file_id"] = file_id
+            f_item["file_type"] = file_type
+            f_item["active"] = True
+            updated = True
+            break
+
+    if not updated:
+        filters_list.append({
+            "keywords": keywords,
+            "reply": reply_content,
+            "button_type": button_type,
+            "file_id": file_id,
+            "file_type": file_type,
+            "active": True
+        })
+
+    if save_filters(filters_list):
+        media_status = f"\n📎 **Attached Media:** {file_type.capitalize()}" if file_id else ""
+        await msg.reply_text(f"✅ **Filter Saved with Exact Spacing!**\n\n🔑 **Keywords:** `{', '.join(keywords)}`\n💬 **Reply:**\n{reply_content}{media_status}", parse_mode="Markdown")
+    else:
+        await msg.reply_text("❌ Error saving filter.")
+
+async def remove_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.effective_message
+    if not await check_admin_privileges(update, context):
+        return
+    raw_args = context.args if context.args else (msg.text.split()[1:] if msg.text else [])
+    target_kw = " ".join(raw_args).strip().lower()
+    filters_list = load_filters()
+    new_list = [f for f in filters_list if target_kw not in [k.lower() for k in f.get("keywords", [])]]
+    if len(new_list) < len(filters_list):
+        save_filters(new_list)
+        await msg.reply_text(f"🗑️ Filter `{target_kw}` deleted successfully!", parse_mode="Markdown")
+    else:
+        await msg.reply_text(f"⚠️ Filter `{target_kw}` nahi mila.", parse_mode="Markdown")
+
+async def toggle_filter_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.effective_message
+    if not await check_admin_privileges(update, context):
+        return
+    raw_args = context.args if context.args else (msg.text.split()[1:] if msg.text else [])
+    target_kw = " ".join(raw_args).strip().lower()
+    filters_list = load_filters()
+    found = False
+    for f_item in filters_list:
+        if target_kw in [k.lower() for k in f_item.get("keywords", [])]:
+            f_item["active"] = not f_item.get("active", True)
+            found = True
+            status = "🟢 Active" if f_item["active"] else "🔴 Paused"
+            break
+    if found:
+        save_filters(filters_list)
+        await msg.reply_text(f"⚙️ Filter `{target_kw}` status: **{status}**", parse_mode="Markdown")
+    else:
+        await msg.reply_text(f"⚠️ Filter `{target_kw}` nahi mila.", parse_mode="Markdown")
+
+async def list_filters_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.effective_message
+    if not await check_admin_privileges(update, context):
+        return
+    filters_list = load_filters()
+    if not filters_list:
+        await msg.reply_text("📁 Koi active filter nahi hai.")
+        return
+    out = "📋 **Configured Filters:**\n\n"
+    for idx, f_item in enumerate(filters_list, 1):
+        status = "🟢" if f_item.get("active", True) else "🔴"
+        kws = ", ".join(f_item.get("keywords", []))
+        media_tag = f" [Media: {f_item.get('file_type')}]" if f_item.get('file_id') else ""
+        out += f"{idx}. {status} `{kws}`{media_tag}\n"
+    await msg.reply_text(out, parse_mode="Markdown")
+
+async def clear_filters_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.effective_message
+    if not await check_admin_privileges(update, context):
+        return
+    save_filters([])
+    await msg.reply_text("🗑️ Saare custom filters clear kar diye gaye!")
+
+# ==========================================
+# 10. CORE MESSAGE HANDLER & AUTO-DELETE
+# ==========================================
+async def delete_message_after_delay(context: ContextTypes.DEFAULT_TYPE, chat_id: int, message_id: int, delay: int = 300):
+    await asyncio.sleep(delay)
+    try:
+        await context.bot.delete_message(chat_id=chat_id, message_id=message_id)
+    except Exception:
+        pass
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.effective_message
+    if not msg or not msg.text:
+        return
+    
+    chat_type = msg.chat.type
+    is_group = chat_type in ["group", "supergroup"]
+    
+    if msg.from_user and msg.from_user.is_bot:
+        return
+
+    user_text_clean = msg.text.strip()
+    lower_text = user_text_clean.lower()
+    target_user = get_target_user(msg)
+    user_tag = extract_user_tag(target_user)
+    user_name = target_user.first_name if target_user else "Creator"
+
+    matched_filter = find_matching_filter(lower_text)
+    sent_message = None
+
+    if matched_filter:
+        raw_reply = matched_filter.get("reply", "")
+        reply_text = raw_reply.replace("{user_tag}", user_tag).replace("{username}", user_tag)
+        
+        btn_type = matched_filter.get("button_type", "none")
+        markup = OFFICIAL_BUTTONS if btn_type == "official" else (MATERIAL_BUTTONS if btn_type == "material" else None)
+        
+        file_id = matched_filter.get("file_id")
+        file_type = matched_filter.get("file_type")
+
+        try:
+            if file_id and file_type == "photo":
+                sent_message = await msg.reply_photo(photo=file_id, caption=reply_text, reply_markup=markup, parse_mode="Markdown")
+            elif file_id and file_type == "video":
+                sent_message = await msg.reply_video(video=file_id, caption=reply_text, reply_markup=markup, parse_mode="Markdown")
+            elif file_id and file_type == "document":
+                sent_message = await msg.reply_document(document=file_id, caption=reply_text, reply_markup=markup, parse_mode="Markdown")
+            else:
+                sent_message = await msg.reply_text(reply_text, reply_markup=markup, parse_mode="Markdown")
+        except Exception as e:
+            logging.error(f"Filter send error: {e}")
+            sent_message = await msg.reply_text(reply_text, reply_markup=markup)
+
+    else:
+        words = user_text_clean.split()
+        if len(words) > 3:
+            reply_text = await get_ai_response(user_text_clean, user_name)
             try:
-                bot.delete_message(message.chat.id, msg_id)
-            except:
-                pass
-    except Exception as e:
-        bot.reply_to(message, f"❌ Purge error: {str(e)}")
+                sent_message = await msg.reply_text(reply_text, parse_mode="Markdown")
+            except Exception:
+                sent_message = await msg.reply_text(reply_text)
 
-# Section 8: Captcha Toggle Module
-@bot.message_handler(func=lambda msg: msg.text and msg.text.startswith('¥captcha'))
-def toggle_captcha(message):
-    if not is_admin(message.chat.id, message.from_user.id):
-        bot.reply_to(message, "❌ Sirf Admins captcha control kar sakte hain!")
+    if sent_message and is_group:
+        asyncio.create_task(delete_message_after_delay(context, msg.chat_id, sent_message.message_id, 300))
+
+# ==========================================
+# 11. MAIN RUNNER (Regex Handlers + Flask)
+# ==========================================
+def main():
+    threading.Thread(target=run_flask, daemon=True).start()
+    if not TELEGRAM_TOKEN:
+        logging.error("❌ TELEGRAM_BOT_TOKEN is missing from environment variables!")
         return
-    args = message.text.split()
-    if len(args) > 1:
-        status = args[1].lower() == 'on'
-        cfg = load_json(CONFIG_FILE)
-        cfg['settings']['captcha'] = status
-        save_json(CONFIG_FILE, cfg)
-        bot.reply_to(message, f"🔒 Captcha status updated: {'ON' if status else 'OFF'}")
 
-# Section 9: Welcome & Goodbye Module
-@bot.message_handler(func=lambda msg: msg.text and msg.text.startswith('¥welcome'))
-def toggle_welcome(message):
-    if not is_admin(message.chat.id, message.from_user.id):
-        bot.reply_to(message, "❌ Sirf Admins welcome settings change kar sakte hain!")
-        return
-    args = message.text.split()
-    if len(args) > 1:
-        status = args[1].lower() == 'on'
-        cfg = load_json(CONFIG_FILE)
-        cfg['settings']['welcome'] = status
-        save_json(CONFIG_FILE, cfg)
-        bot.reply_to(message, f"👋 Welcome messages status: {'ON' if status else 'OFF'}")
-
-@bot.message_handler(func=lambda msg: msg.text and msg.text.startswith('¥setwelcome'))
-def set_welcome_message(message):
-    if not is_admin(message.chat.id, message.from_user.id):
-        bot.reply_to(message, "❌ Sirf Admins welcome message set kar sakte hain!")
-        return
-    new_msg = message.text[len('¥setwelcome'):].strip()
-    cfg = load_json(CONFIG_FILE)
-    cfg['settings']['welcome_msg'] = new_msg
-    save_json(CONFIG_FILE, cfg)
-    bot.reply_to(message, "✅ Custom welcome message successfully update ho gaya hai!")
-
-# Section 10-12: Time Greetings Modules (GM, GE, GN)
-@bot.message_handler(func=lambda msg: msg.text and msg.text.startswith('¥setgm'))
-def set_gm(message):
-    if not is_admin(message.chat.id, message.from_user.id): return
-    cfg = load_json(CONFIG_FILE)
-    cfg['settings']['gm_msg'] = message.text[len('¥setgm'):].strip()
-    save_json(CONFIG_FILE, cfg)
-    bot.reply_to(message, "☀️ Good Morning message updated!")
-
-@bot.message_handler(func=lambda msg: msg.text and msg.text.startswith('¥setge'))
-def set_ge(message):
-    if not is_admin(message.chat.id, message.from_user.id): return
-    cfg = load_json(CONFIG_FILE)
-    cfg['settings']['ge_msg'] = message.text[len('¥setge'):].strip()
-    save_json(CONFIG_FILE, cfg)
-    bot.reply_to(message, "🌆 Good Evening message updated!")
-
-@bot.message_handler(func=lambda msg: msg.text and msg.text.startswith('¥setgn'))
-def set_gn(message):
-    if not is_admin(message.chat.id, message.from_user.id): return
-    cfg = load_json(CONFIG_FILE)
-    cfg['settings']['gn_msg'] = message.text[len('¥setgn'):].strip()
-    save_json(CONFIG_FILE, cfg)
-    bot.reply_to(message, "🌙 Good Night message updated!")
-
-# Section 13: Rules Management Module
-@bot.message_handler(func=lambda msg: msg.text and msg.text.startswith('¥setrules'))
-def set_rules(message):
-    if not is_admin(message.chat.id, message.from_user.id):
-        bot.reply_to(message, "❌ Sirf Admins rules set kar sakte hain!")
-        return
-    cfg = load_json(CONFIG_FILE)
-    cfg['settings']['rules'] = message.text[len('¥setrules'):].strip()
-    save_json(CONFIG_FILE, cfg)
-    bot.reply_to(message, "📜 Group rules successfully update ho gaye hain!")
-
-@bot.message_handler(func=lambda msg: msg.text and msg.text.strip() == '¥rules')
-def get_rules(message):
-    cfg = load_json(CONFIG_FILE)
-    rules = cfg['settings'].get('rules', 'No rules set yet.')
-    bot.reply_to(message, f"{rules}", parse_mode="Markdown")
-
-# Section 14: Notes Module
-@bot.message_handler(func=lambda msg: msg.text and msg.text.startswith('¥setnote'))
-def set_note(message):
-    if not is_admin(message.chat.id, message.from_user.id):
-        bot.reply_to(message, "❌ Sirf Admins notes save kar sakte hain!")
-        return
-    try:
-        parts = message.text[len('¥setnote'):].strip().split('|')
-        if len(parts) < 2:
-            bot.reply_to(message, "⚠️ Sahi format use karein:\n`¥setnote notename | Note content text`", parse_mode="Markdown")
-            return
-        note_name = parts[0].strip().lower()
-        note_text = parts[1].strip()
-        notes = load_json(NOTES_FILE)
-        chat_id_str = str(message.chat.id)
-        if chat_id_str not in notes: notes[chat_id_str] = {}
-        notes[chat_id_str][note_name] = note_text
-        save_json(NOTES_FILE, notes)
-        bot.reply_to(message, f"📂 Note `{note_name}` save ho gaya hai!")
-    except Exception as e:
-        bot.reply_to(message, f"❌ Error: {str(e)}")
-
-@bot.message_handler(func=lambda msg: msg.text and msg.text.startswith('¥getnote'))
-def get_note(message):
-    args = message.text.split(maxsplit=1)
-    if len(args) < 2:
-        bot.reply_to(message, "⚠️ Note name batayein: `¥getnote notename`", parse_mode="Markdown")
-        return
-    note_name = args[1].strip().lower()
-    notes = load_json(NOTES_FILE)
-    chat_id_str = str(message.chat.id)
-    if chat_id_str in notes and note_name in notes[chat_id_str]:
-        bot.reply_to(message, notes[chat_id_str][note_name], parse_mode="Markdown")
-    else:
-        bot.reply_to(message, f"⚠️ Note `{note_name}` nahi mila.")
-
-# Sections 15-18: Dynamic Filters & Universal Inline Button Engine
-# Format: ¥addfilter keyword | Line 1 text\nLine 2 text | 📥 Download PNG - https://drive.google.com/...
-@bot.message_handler(func=lambda msg: msg.text and msg.text.startswith('¥addfilter'))
-def add_filter_command(message):
-    if not is_admin(message.chat.id, message.from_user.id):
-        bot.reply_to(message, "❌ Sirf Admins hi filters add kar sakte hain!")
-        return
+    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     
-    try:
-        parts = message.text[len('¥addfilter'):].strip().split('|')
-        if len(parts) < 2:
-            bot.reply_to(message, "⚠️ Sahi format use karein:\n`¥addfilter keyword | Line by line response text | 📥 Button Name - URL`", parse_mode="Markdown")
-            return
-        
-        keyword = parts[0].strip().lower()
-        response_text = parts[1].strip()
-        
-        buttons = []
-        for btn_part in parts[2:]:
-            btn_part = btn_part.strip()
-            if '-' in btn_part:
-                name, url = btn_part.split('-', 1)
-                buttons.append({"name": name.strip(), "url": url.strip()})
-
-        filters_data = load_json(FILTERS_FILE)
-        chat_id_str = str(message.chat.id)
-        if chat_id_str not in filters_data:
-            filters_data[chat_id_str] = {}
-
-        filters_data[chat_id_str][keyword] = {
-            "text": response_text,
-            "buttons": buttons
-        }
-        save_json(FILTERS_FILE, filters_data)
-        bot.reply_to(message, f"✅ Filter `{keyword}` aur universal buttons safaltapurvak save ho gaye hain!")
-    except Exception as e:
-        bot.reply_to(message, f"❌ Error adding filter: {str(e)}")
-
-@bot.message_handler(func=lambda msg: msg.text and msg.text.startswith('¥delfilter'))
-def delete_filter_command(message):
-    if not is_admin(message.chat.id, message.from_user.id):
-        bot.reply_to(message, "❌ Sirf Admins hi filters delete kar sakte hain!")
-        return
-    args = message.text.split(maxsplit=1)
-    if len(args) < 2:
-        bot.reply_to(message, "⚠️ Keyword batayein: `¥delfilter keyword`", parse_mode="Markdown")
-        return
-    keyword = args[1].strip().lower()
-    filters_data = load_json(FILTERS_FILE)
-    chat_id_str = str(message.chat.id)
-    if chat_id_str in filters_data and keyword in filters_data[chat_id_str]:
-        del filters_data[chat_id_str][keyword]
-        save_json(FILTERS_FILE, filters_data)
-        bot.reply_to(message, f"🗑 Filter `{keyword}` delete kar diya gaya hai!")
-    else:
-        bot.reply_to(message, f"⚠️ Filter `{keyword}` nahi mila.")
-
-@bot.message_handler(func=lambda msg: msg.text and msg.text.startswith('¥filters'))
-def list_filters_command(message):
-    filters_data = load_json(FILTERS_FILE)
-    chat_id_str = str(message.chat.id)
-    if chat_id_str not in filters_data or not filters_data[chat_id_str]:
-        bot.reply_to(message, "📂 Is group mein koi active filter nahi hai.")
-        return
-    filter_list = "📂 **Active Filters & Buttons List:**\n\n"
-    for kw in filters_data[chat_id_str].keys():
-        filter_list += f"• `{kw}`\n"
-    bot.reply_to(message, filter_list, parse_mode="Markdown")
-
-# Sections 19-20: Universal Text Processor (Filters + Gemini AI Fallback Engine)
-@bot.message_handler(func=lambda msg: msg.text and not msg.text.startswith('¥'))
-def handle_text_messages(message):
-    chat_id_str = str(message.chat.id)
-    text = message.text.strip().lower()
+    def rx(pattern):
+        return filters.Regex(re.compile(pattern, re.IGNORECASE))
     
-    # Check custom filters with aesthetic line breaks and universal buttons
-    filters_data = load_json(FILTERS_FILE)
-    if chat_id_str in filters_data and text in filters_data[chat_id_str]:
-        fdata = filters_data[chat_id_str][text]
-        markup = InlineKeyboardMarkup()
-        for btn in fdata.get("buttons", []):
-            markup.add(InlineKeyboardButton(text=btn["name"], url=btn["url"]))
-        bot.reply_to(message, fdata["text"], reply_markup=markup if fdata["buttons"] else None, parse_mode="Markdown")
-        return
+    application.add_handler(MessageHandler(rx(r'^¥$'), master_menu_cmd))
+    application.add_handler(MessageHandler(rx(r'^[/\¥]welcome(?:\s+|$)'), welcome_cmd))
+    application.add_handler(MessageHandler(rx(r'^[/\¥]help(?:\s+|$)'), help_cmd))
+    application.add_handler(MessageHandler(rx(r'^[/\¥]support(?:\s+|$)'), support_cmd))
+    application.add_handler(MessageHandler(rx(r'^[/\¥]material(?:\s+|$)'), material_cmd))
 
-    # Gemini AI Fallback for complex queries (>3 words) in English, Urdu, Hinglish, or Devanagari
-    words = message.text.split()
-    if len(words) > 3:
-        ai_reply = get_gemini_response(message.text)
-        bot.reply_to(message, ai_reply)
+    # Moderation Commands
+    application.add_handler(MessageHandler(rx(r'^[/\¥]warn(?:\s+|$)'), warn_cmd))
+    application.add_handler(MessageHandler(rx(r'^[/\¥](mute|silent)(?:\s+|$)'), mute_cmd))
+    application.add_handler(MessageHandler(rx(r'^[/\¥](unmute|unsilent)(?:\s+|$)'), unmute_cmd))
+    application.add_handler(MessageHandler(rx(r'^[/\¥](ban|tban)(?:\s+|$)'), ban_cmd))
+    application.add_handler(MessageHandler(rx(r'^[/\¥]unban(?:\s+|$)'), unban_cmd))
+    application.add_handler(MessageHandler(rx(r'^[/\¥]kick(?:\s+|$)'), kick_cmd))
 
-# ==============================================================================
-# BOT & SERVER RUNNER INITIATION
-# ==============================================================================
-if __name__ == '__main__':
-    t = threading.Thread(target=run_flask)
-    t.daemon = True
-    t.start()
-    print("Enterprise 20-Section Bot and Flask server started successfully!")
-    bot.infinity_polling()
+    # Filter Management Commands
+    application.add_handler(MessageHandler(rx(r'^[/\¥]addfilter(?:\s+|$)'), add_filter_cmd))
+    application.add_handler(MessageHandler(rx(r'^[/\¥]removefilter(?:\s+|$)'), remove_filter_cmd))
+    application.add_handler(MessageHandler(rx(r'^[/\¥]togglefilter(?:\s+|$)'), toggle_filter_cmd))
+    application.add_handler(MessageHandler(rx(r'^[/\¥]listfilters(?:\s+|$)'), list_filters_cmd))
+    application.add_handler(MessageHandler(rx(r'^[/\¥]clearfilters(?:\s+|$)'), clear_filters_cmd))
 
+    # General Message Handler for AI and Filters
+    application.add_handler(MessageHandler(~filters.COMMAND & ~filters.StatusUpdate.ALL, handle_message))
+
+    logging.info("🚀 SabKraftTech Pro AI Bot Running Successfully...")
+    application.run_polling(drop_pending_updates=True)
+
+if __name__ == "__main__":
+    main()
+    
